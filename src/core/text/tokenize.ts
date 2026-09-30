@@ -15,7 +15,7 @@ function isTextMatchable(c: number, text: string): boolean {
   if (c >= 0x6201 && c <= 0x623c && text.length < 2) return false; // one-letter statistic names
   if (c >= 0x6201 && c <= 0x623c && /^(df|SS|MS)$/.test(text)) return false;
   if (c >= 0xbbb0 && c <= 0xbbca) return false; // lower-case letters: handled by the letter rule
-  if (c >= 0xbbe0 && c <= 0xbbe9) return false; // subscript digits
+  if (c >= 0xbbe0 && c <= 0xbbea) return false; // subscript digits
   if (c === T.SPACE) return false;
   return text.length > 0;
 }

@@ -95,6 +95,7 @@ export class Parser {
 
   /** expression [conversion] {→ target}. The caller checks that input is exhausted. */
   parseExpressionStatement(): Node {
+    const start = this.i;
     let n = this.parseExpression();
     const c = this.peek();
     if (c !== undefined && CONVERSIONS.has(c)) {
@@ -105,7 +106,7 @@ export class Parser {
       const pos = this.i;
       this.i++;
       const target = this.parseTarget();
-      n = { k: 'sto', a: n, target, pos };
+      n = { k: 'sto', a: n, target, pos, src: this.toks.slice(start, pos) };
     }
     return n;
   }

@@ -17,6 +17,6 @@ export type Node =
   | { k: 'call'; fn: number; args: Node[]; pos: number }
   | { k: 'index'; base: Node; args: Node[]; pos: number }
   | { k: 'conv'; op: number; a: Node; pos: number }
-  | { k: 'sto'; a: Node; target: Node; pos: number };
+  | { k: 'sto'; a: Node; target: Node; pos: number; src: number[] };
 
 export type NodeKind = Node['k'];
