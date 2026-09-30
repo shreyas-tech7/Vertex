@@ -5,12 +5,12 @@ Legend: `[x]` done and tested · `[ ]` open · `[~]` partly done (see STATUS.md)
 
 ## M0 Scaffold
 
-- [ ] Vite + React + TypeScript (strict) + Tailwind + ESLint + Prettier + Vitest + Playwright + vite-plugin-pwa
-- [ ] Scripts: dev, build, preview, check, test, test:e2e
-- [ ] GitHub Actions workflow (check + e2e on PRs and pushes to main)
-- [ ] LICENSE, README with disclaimer, THIRD_PARTY_NOTICES, CLAUDE.md
-- [ ] docs: SPEC, PLAN, DECISIONS, STATUS, ARCHITECTURE
-- [ ] Placeholder calculator face with blank LCD
+- [x] Vite + React + TypeScript (strict) + Tailwind + ESLint + Prettier + Vitest + Playwright + vite-plugin-pwa
+- [x] Scripts: dev, build, preview, check, test, test:e2e
+- [~] GitHub Actions workflow (check + e2e on PRs and pushes to main) — written, but the push token cannot create `.github/workflows` (see STATUS.md)
+- [x] LICENSE, README with disclaimer, THIRD_PARTY_NOTICES, CLAUDE.md
+- [x] docs: SPEC, PLAN, DECISIONS, STATUS, ARCHITECTURE
+- [x] Placeholder calculator face with blank LCD
 
 ## M1 Engine (no UI)
 

@@ -4,7 +4,7 @@ Honest state of the project. Anything unfinished, or different from a real TI-84
 
 ## Current milestone
 
-M0 (scaffold). Nothing of the calculator exists yet beyond a placeholder face.
+M0 (scaffold) complete. The calculator itself starts in M1 (engine).
 
 ## Known differences from hardware
 
