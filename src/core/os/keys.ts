@@ -1,5 +1,6 @@
 /**
- * The 50 physical keys: ids, printed labels (ours), and the getKey() code each one returns.
+ * The 50 physical keys: ids, printed labels (ours), the getKey() code each one returns, and its position in the
+ * calculator's 8x8 keypad matrix (the numbers CEmu uses, from core/keypad.c and gui/qt/keypad/keymap.cpp).
  * Layout order is row by row, top to bottom.
  */
 export type KeyId =
@@ -64,9 +65,69 @@ export interface KeyInfo {
   alpha: string;
   /** getKey code; 0 means the key has none (ON). */
   code: number;
+  /** Row and column in the keypad matrix, as CEmu numbers them. ON is row 2, column 0. */
+  row: number;
+  col: number;
   /** Screen-reader description of what the key does. */
   aria: string;
 }
+
+/**
+ * Matrix position [row, col] of every key. This is CEmu's own table (the KEYMAP macro in
+ * gui/qt/keypad/keymap.cpp at the pinned commit). Where it disagrees with anything else, CEmu wins.
+ */
+export const KEY_MATRIX: Readonly<Record<KeyId, readonly [row: number, col: number]>> = {
+  GRAPH: [1, 0],
+  TRACE: [1, 1],
+  ZOOM: [1, 2],
+  WINDOW: [1, 3],
+  YEQ: [1, 4],
+  '2ND': [1, 5],
+  MODE: [1, 6],
+  DEL: [1, 7],
+  ON: [2, 0],
+  STO: [2, 1],
+  LN: [2, 2],
+  LOG: [2, 3],
+  SQR: [2, 4],
+  INV: [2, 5],
+  MATH: [2, 6],
+  ALPHA: [2, 7],
+  '0': [3, 0],
+  '1': [3, 1],
+  '4': [3, 2],
+  '7': [3, 3],
+  COMMA: [3, 4],
+  SIN: [3, 5],
+  APPS: [3, 6],
+  XTTN: [3, 7],
+  DOT: [4, 0],
+  '2': [4, 1],
+  '5': [4, 2],
+  '8': [4, 3],
+  LPAREN: [4, 4],
+  COS: [4, 5],
+  PRGM: [4, 6],
+  STAT: [4, 7],
+  NEG: [5, 0],
+  '3': [5, 1],
+  '6': [5, 2],
+  '9': [5, 3],
+  RPAREN: [5, 4],
+  TAN: [5, 5],
+  VARS: [5, 6],
+  ENTER: [6, 0],
+  ADD: [6, 1],
+  SUB: [6, 2],
+  MUL: [6, 3],
+  DIV: [6, 4],
+  POW: [6, 5],
+  CLEAR: [6, 6],
+  DOWN: [7, 0],
+  LEFT: [7, 1],
+  RIGHT: [7, 2],
+  UP: [7, 3],
+};
 
 const k = (
   id: KeyId,
@@ -81,6 +142,8 @@ const k = (
   second,
   alpha,
   code,
+  row: KEY_MATRIX[id][0],
+  col: KEY_MATRIX[id][1],
   aria: aria ?? label,
 });
 

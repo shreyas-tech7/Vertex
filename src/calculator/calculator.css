@@ -1,0 +1,519 @@
+/* The calculator page. Layout and zoom controls follow the reference page (ti84calc.html). The calculator is original. */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  overflow-x: hidden;
+}
+
+body {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  background: #ffffff;
+  overflow-x: hidden;
+  color: #333;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  line-height: 1.6;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Zoom controls: minus, percentage, plus. */
+#zoom_controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+  margin: 10px auto;
+  z-index: 1000;
+  position: relative;
+}
+
+#zoom_controls button {
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f0f0f0;
+  color: #000;
+  transition: background-color 0.2s;
+}
+
+#zoom_controls button:hover {
+  background-color: #e0e0e0;
+}
+
+#zoom_controls button:active {
+  background-color: #d0d0d0;
+}
+
+#zoom_controls button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+#zoom_level {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: bold;
+  color: #000;
+}
+
+/* The zoomed calculator. It scales from the top centre. */
+.stage {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  transition: height 0.3s ease;
+}
+
+.calculatorDiv {
+  outline: none;
+  flex: none;
+  margin-left: auto;
+  margin-right: auto;
+  transform-origin: top center;
+  transition: transform 0.3s ease;
+}
+
+.below {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 20px 24px;
+}
+
+.change-rom {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: bold;
+  color: #000;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.change-rom:hover {
+  text-decoration-thickness: 2px;
+}
+
+.notice {
+  margin: 0;
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+}
+
+/* The calculator body. */
+.calc-body {
+  position: relative;
+  width: 340px;
+  height: 738px;
+  border-radius: 30px 30px 24px 24px;
+  background: linear-gradient(180deg, #24272d 0%, #141619 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 10px 30px rgba(0, 0, 0, 0.18);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.brand {
+  position: absolute;
+  left: 18px;
+  top: 10px;
+  height: 22px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 22px;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: #d9dce2;
+}
+
+.screen {
+  position: absolute;
+  background: #000;
+  border-radius: 3px;
+  box-shadow:
+    0 0 0 4px #060709,
+    0 0 0 5px #2b2f36;
+  overflow: hidden;
+}
+
+.screen canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+
+.screen.is-dragging {
+  box-shadow:
+    0 0 0 4px #060709,
+    0 0 0 6px #3a72d9;
+}
+
+/* Loading state. */
+.screen-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #fff;
+  color: #555;
+  font-size: 13px;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #e0e0e0;
+  border-top-color: #000;
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 3s;
+  }
+
+  .stage,
+  .calculatorDiv {
+    transition: none;
+  }
+}
+
+/* ROM panel. */
+.rom-panel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px 10px;
+  overflow: auto;
+  background: #fff;
+  color: #333;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.rom-panel h1 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  color: #000;
+}
+
+.rom-drop {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+  background: #fafafa;
+  text-align: center;
+}
+
+.rom-drop.is-over {
+  border-color: #000;
+  background: #f0f0f0;
+}
+
+.rom-drop p {
+  margin: 0;
+  font-size: 12.5px;
+  color: #555;
+}
+
+.rom-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.rom-button {
+  padding: 8px 18px;
+  border: 1px solid #000;
+  border-radius: 6px;
+  background: #000;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.rom-button:hover {
+  background: #333;
+}
+
+.rom-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.rom-button-quiet {
+  border-color: #ccc;
+  background: #f0f0f0;
+  color: #333;
+}
+
+.rom-button-quiet:hover {
+  background: #e0e0e0;
+}
+
+.rom-error {
+  min-height: 1.4em;
+  margin: 0;
+  font-size: 12.5px;
+  color: #b00020;
+  text-align: center;
+}
+
+.rom-hint {
+  margin: 0;
+  font-size: 11.5px;
+  color: #666;
+  text-align: center;
+}
+
+.rom-hint a {
+  color: #000;
+  font-weight: 500;
+}
+
+.rom-cancel {
+  align-self: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  color: #666;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.toast {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.88);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.toast-error {
+  background: #b00020;
+}
+
+/* Keys. */
+.keypad {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  touch-action: none;
+}
+
+.key {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: #3b4048;
+  color: #fff;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  box-shadow:
+    0 2px 0 #101215,
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 0.05s,
+    box-shadow 0.05s,
+    filter 0.1s;
+}
+
+.key:hover {
+  filter: brightness(1.12);
+}
+
+.key.is-down {
+  transform: translateY(2px);
+  box-shadow:
+    0 0 0 #101215,
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  filter: brightness(1.3);
+}
+
+.key:focus-visible,
+.arrow:focus-visible,
+.rom-button:focus-visible,
+.rom-cancel:focus-visible,
+.change-rom:focus-visible,
+#zoom_controls button:focus-visible {
+  outline: 2px solid #3a72d9;
+  outline-offset: 2px;
+}
+
+.key-fn {
+  border-radius: 6px;
+  background: #2a2e34;
+  font-size: 10px;
+}
+
+.key-second {
+  background: #3a72d9;
+}
+
+.key-alpha {
+  background: #2f9d5f;
+}
+
+.key-num {
+  background: #f2f3f5;
+  color: #111;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.key-op {
+  background: #cdd1d8;
+  color: #111;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.key-enter {
+  background: #cdd1d8;
+  color: #111;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.key-num.is-down,
+.key-op.is-down,
+.key-enter.is-down {
+  filter: brightness(0.82);
+}
+
+.legend {
+  position: absolute;
+  height: 11px;
+  font-size: 7.5px;
+  font-weight: 700;
+  line-height: 11px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.legend sup {
+  font-size: 0.8em;
+  line-height: 0;
+}
+
+.legend-second {
+  color: #6ea4ff;
+}
+
+.legend-alpha {
+  color: #4ed184;
+  text-align: right;
+}
+
+/* Arrow pad: four wedges cut from one disc. */
+.arrow-pad {
+  position: absolute;
+  border-radius: 50%;
+  background: #2a2e34;
+  box-shadow:
+    0 2px 0 #101215,
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.arrow {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #e6e8ec;
+  cursor: pointer;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.arrow:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.arrow.is-down {
+  background: #4b515b;
+}
+
+.arrow-glyph {
+  position: absolute;
+  font-size: 11px;
+  line-height: 1;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.arrow-hub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #1b1e22;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
