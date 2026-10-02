@@ -2,11 +2,11 @@
   "name": "vertex-calculator",
   "version": "0.1.0",
   "private": true,
-  "description": "Vertex — a free, TI-84 Plus compatible graphing calculator for the browser.",
+  "description": "Vertex, a free TI-84 Plus CE calculator for the browser. Runs the real TI-OS on CEmu (WebAssembly) with a ROM from the visitor's own calculator.",
   "license": "MIT",
   "type": "module",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.18"
   },
   "scripts": {
     "dev": "vite",
@@ -18,11 +18,15 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "npm run typecheck && npm run lint && npm run test && npm run build",
-    "test:e2e": "vite build && playwright test"
+    "check": "npm run typecheck && npm run lint && npm run test && npm run build && npm run scan",
+    "test:e2e": "vite build && playwright test",
+    "gen:pages": "node scripts/generate-pages.ts",
+    "build:emulator": "bash emulator/build.sh",
+    "scan": "node scripts/scan-forbidden.mjs",
+    "assets": "node scripts/make-assets.mjs",
+    "compare": "node scripts/compare-reference.mjs"
   },
   "dependencies": {
-    "decimal.js": "^10.6.0",
     "idb-keyval": "^6.3.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
@@ -42,7 +46,6 @@
     "typescript-eslint": "^8.71.0",
     "vite": "^8.3.1",
     "vite-plugin-pwa": "^1.3.0",
-    "vitest": "^5.0.2",
-    "workbox-window": "^7.4.1"
+    "vitest": "^5.0.2"
   }
 }

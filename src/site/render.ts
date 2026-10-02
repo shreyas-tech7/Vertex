@@ -82,6 +82,8 @@ function head(
     <meta property="og:title" content="${escapeHtml(title)}">
     <meta property="og:description" content="${escapeHtml(description)}">
     <meta property="og:type" content="website">
+    <meta property="og:image" content="${siteUrl}og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
     <meta property="og:locale" content="${lang}">
     <meta name="theme-color" content="#ffffff">
     <link rel="stylesheet" href="/src/site/site.css">`;
@@ -151,7 +153,7 @@ function renderHome(lang: Lang, siteUrl: string): string {
             </div>
 
             <div class="calculator-preview">
-                <img src="/preview.png" alt="${escapeHtml(s.previewAlt)}" class="preview-image" width="400" height="469">
+                <img src="/preview.png" alt="${escapeHtml(s.previewAlt)}" class="preview-image" width="240" height="521">
             </div>
 
             <div class="section">

@@ -6,6 +6,7 @@ import { defineConfig, type Plugin } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { generatePages } from './scripts/generate-pages.ts';
 import { CONTENT_SECURITY_POLICY } from './src/site/csp.ts';
+import { SECURITY_HEADERS } from './src/site/support.ts';
 
 /**
  * Generates the nine-language pages before Vite looks for its HTML entries, lists them as build inputs, and adds the
@@ -93,7 +94,8 @@ export default defineConfig({
   ],
   worker: { format: 'es' },
   server: { host: '0.0.0.0', port: 5173, allowedHosts: true },
-  preview: { host: '0.0.0.0', port: 4173, allowedHosts: true },
+  // The preview server sends the same security headers a real host should, so the tests run under the full policy.
+  preview: { host: '0.0.0.0', port: 4173, allowedHosts: true, headers: Object.fromEntries(SECURITY_HEADERS) },
   build: { target: 'es2022', sourcemap: false },
   test: {
     environment: 'node',
