@@ -71,7 +71,7 @@ export default defineConfig({
       manifest: {
         name: 'Vertex Graphing Calculator',
         short_name: 'Vertex',
-        description: 'A free TI-84 Plus CE calculator that runs in your browser.',
+        description: 'An ad-free TI-84 Plus CE calculator that runs in your browser.',
         theme_color: '#000000',
         background_color: '#ffffff',
         display: 'standalone',

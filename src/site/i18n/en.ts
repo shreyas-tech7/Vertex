@@ -2,11 +2,11 @@ import type { Strings } from './types.ts';
 
 export const en: Strings = {
   htmlLang: 'en',
-  title: '{brand}: Free TI-84 Calculator Online',
+  title: '{brand}: Ad-Free TI-84 Calculator Online',
   description:
-    'Use a free TI-84 Plus CE calculator in your browser. {brand} runs the real TI-OS on the CEmu emulator with a ROM from your own calculator.',
+    'Use an ad-free TI-84 Plus CE calculator in your browser. {brand} runs the real TI-OS on the CEmu emulator with a ROM from your own calculator.',
   languageLabel: 'Language',
-  h1: 'Free TI-84 Calculator Online',
+  h1: 'Ad-Free TI-84 Calculator Online',
   noticeLead: 'Independent website.',
   noticeBody:
     '{brand} is not affiliated with Texas Instruments. It runs the TI-84 Plus CE on an open source emulator.',
@@ -14,7 +14,7 @@ export const en: Strings = {
   about: {
     heading: 'About {brand}',
     paragraphs: [
-      'Welcome to {brand}, a free TI-84 Plus CE graphing calculator that runs in your browser. It uses CEmu, an open source emulator, to run the real TI-OS on emulated hardware. You get the same keys, menus, and results as the handheld, on any device, with nothing to install.',
+      'Welcome to {brand}, an ad-free TI-84 Plus CE graphing calculator that runs in your browser. It uses CEmu, an open source emulator, to run the real TI-OS on emulated hardware. You get the same keys, menus, and results as the handheld, on any device, with nothing to install.',
       '{brand} is for students, teachers, and anyone who needs a graphing calculator for math, science, engineering, or statistics. You bring one thing: a ROM file from your own calculator. You load it once and {brand} remembers it.',
     ],
   },
@@ -196,7 +196,7 @@ export const en: Strings = {
       {
         heading: 'Using {brand}',
         paragraphs: [
-          '{brand} is free to use for personal, school, and work purposes. Do not use it to harm others or to break the law.',
+          '{brand} has no ads. You can use it for personal, school, and work purposes. Do not use it to harm others or to break the law.',
         ],
       },
       {

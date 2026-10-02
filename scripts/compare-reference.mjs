@@ -127,7 +127,7 @@ async function measure(page, selector) {
 
 const results = {};
 for (const [label, viewport] of [
-  ['desktop 1440x900', { width: 1440, height: 900 }],
+  ['desktop 1920x855', { width: 1920, height: 855 }],
   ['phone 390x844', { width: 390, height: 844 }],
 ]) {
   const pages = {};

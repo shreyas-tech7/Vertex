@@ -127,6 +127,46 @@ describe('generated pages', () => {
     }
   });
 
+  it('home pages carry the notice card, the 130 px picture of our own drawing and the Twitter tags', () => {
+    for (const lang of LANGS) {
+      const home = pages.find((p) => p.lang === lang && p.kind === 'home')!.html;
+      expect(home).toMatch(/<p class="independent-notice"><strong>[^<]+<\/strong> [^<]+<\/p>/);
+      expect(home).toContain('/calculator-preview.png');
+      expect(home).toContain('width="130" height="130"');
+      expect(home).not.toContain('/preview.png');
+      expect(home).toContain('<meta name="twitter:title"');
+      expect(home).toContain('<meta name="twitter:description"');
+    }
+  });
+
+  it('puts the ad-free phrase in every home page title, Open Graph and Twitter tag', () => {
+    const phrase: Record<string, string> = {
+      en: 'ad-free',
+      fr: 'sans publicité',
+      de: 'werbefrei',
+      ja: '広告なし',
+      it: 'senza pubblicità',
+      es: 'sin anuncios',
+      pt: 'sem anúncios',
+      sv: 'reklamfri',
+      ru: 'без рекламы',
+    };
+    for (const lang of LANGS) {
+      const home = pages.find((p) => p.lang === lang && p.kind === 'home')!.html.toLowerCase();
+      const needle = phrase[lang]!;
+      for (const tag of [
+        /<title>([^<]*)<\/title>/,
+        /<meta name="description" content="([^"]*)"/,
+        /<meta property="og:title" content="([^"]*)"/,
+        /<meta property="og:description" content="([^"]*)"/,
+        /<meta name="twitter:title" content="([^"]*)"/,
+        /<meta name="twitter:description" content="([^"]*)"/,
+      ]) {
+        expect(tag.exec(home)![1], `${lang} ${tag.source}`).toContain(needle);
+      }
+    }
+  });
+
   it('never mentions a Texas Instruments or Pearson host', () => {
     for (const page of pages) {
       expect(page.html, page.file).not.toMatch(/testnav|\bti\.com\b|pearson|ELG-min|h84statej|TI84CE_touch/i);

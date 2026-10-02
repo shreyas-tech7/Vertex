@@ -1,7 +1,8 @@
 /*
  * Vertex landing, privacy and terms pages.
- * The layout, sizes, colors and breakpoint follow the reference page (bifdu9898/TI84Calculator, MIT).
- * Rules marked "added" are Vertex's own: the language menu, the independent-site notice, the footer links and the legal pages.
+ * Adapted from github.com/bifdu9898/TI84Calculator (MIT), see THIRD_PARTY_NOTICES.md.
+ * The layout, sizes, colors and breakpoint follow that page. Rules marked "added" are Vertex's own: the language menu,
+ * the independent-site notice, the footer links and the legal pages.
  */
 * {
   margin: 0;
@@ -47,7 +48,8 @@ body {
   width: 100%;
   max-width: 600px;
   min-height: 700px;
-  height: 800px;
+  /* 604 px calculator + 150 px of controls and margins, so the first paint is already the final height. */
+  height: 754px;
   border: none;
   background: white;
   overflow: hidden;
@@ -150,6 +152,7 @@ body {
 }
 
 .calculator-preview img.preview-image {
+  /* The reference sets this inline. The picture is 256 x 256 and drawn at 130 x 130 with its 1px border. */
   max-width: 400px;
 }
 
@@ -226,7 +229,6 @@ ul {
 /* added: language menu (a details element, so it works without JavaScript) */
 .lang-menu {
   position: relative;
-  font-size: 0.9em;
   flex: none;
 }
 
@@ -234,13 +236,15 @@ ul {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 2px 12px;
+  padding: 8px 16px;
   border: 1px solid #e0e0e0;
   border-radius: 6px;
-  background: #ffffff;
+  background: #f5f5f5;
   color: #333;
-  /* Kept short so the bar is exactly as tall as the reference's (73px, 59px under 768px). */
-  line-height: 1.4;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 15.2px;
+  /* No height is set. Measured live, the button comes out 39 px tall, which makes the bar 80 px (70 px on a phone). */
+  line-height: 1.38;
   list-style: none;
   cursor: pointer;
   transition: background 0.2s;
@@ -258,7 +262,7 @@ ul {
 
 .lang-menu summary:hover,
 .lang-menu[open] summary {
-  background: #fafafa;
+  background: #ebebeb;
 }
 
 .lang-menu ul {
@@ -269,6 +273,7 @@ ul {
   min-width: 160px;
   padding: 6px;
   list-style: none;
+  font-size: 0.9em;
   line-height: 1.5;
   background: #ffffff;
   border: 1px solid #e0e0e0;
@@ -300,17 +305,21 @@ ul {
   outline-offset: 2px;
 }
 
-/* added: the independent-site notice under the H1 */
+/* added: the independent-site notice card between the H1 and the calculator (680 px wide at desktop width) */
 .independent-notice {
-  max-width: 600px;
-  margin: 8px auto 20px;
-  font-size: 0.9em;
-  color: #666;
+  margin: 0 110px 20px;
+  padding: 12px 16px;
+  border: 1px solid #d7dee8;
+  border-radius: 8px;
+  background: #f7f9fc;
+  color: #374151;
+  font-size: 0.92em;
+  line-height: 1.5;
+  text-align: center;
 }
 
 .independent-notice strong {
-  font-weight: 600;
-  color: #333;
+  font-weight: 700;
 }
 
 .footer-links span {
@@ -371,6 +380,10 @@ ul {
 
   .calculator-iframe {
     height: 700px;
+  }
+
+  .independent-notice {
+    margin: 0 0 20px;
   }
 
   .legal h1 {

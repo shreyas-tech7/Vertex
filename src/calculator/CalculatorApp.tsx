@@ -1,4 +1,5 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+// Page shell and zoom controls adapted from github.com/bifdu9898/TI84Calculator (MIT), see THIRD_PARTY_NOTICES.md.
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { APP_NAME } from '../core/brand.ts';
 import { fillDeep } from '../site/i18n/format.ts';
 import { STRINGS } from '../site/i18n/index.ts';
@@ -9,7 +10,16 @@ import { RomPanel } from './RomPanel.tsx';
 import { Screen } from './Screen.tsx';
 import { useCalculator } from './useCalculator.ts';
 import { ZoomControls } from './ZoomControls.tsx';
-import { notifyParentHeight, readZoom, saveZoom, stepZoom } from './zoom.ts';
+import {
+  ZOOM_MAX,
+  effectiveZoom,
+  frameHeight,
+  notifyParentHeight,
+  readZoom,
+  saveZoom,
+  stepFromShown,
+  zoomCap,
+} from './zoom.ts';
 
 function browserStorage(): Storage | null {
   try {
@@ -23,31 +33,34 @@ export function CalculatorApp() {
   const lang = pageLanguage(window.location.search, document.documentElement.lang);
   const strings = useMemo(() => fillDeep(STRINGS[lang].calc, { brand: APP_NAME }), [lang]);
   const calculator = useCalculator(strings, APP_NAME);
-  const [zoom, setZoom] = useState(() => readZoom(browserStorage()));
-
-  const controls = useRef<HTMLDivElement>(null);
-  const below = useRef<HTMLDivElement>(null);
+  // What the visitor asked for is remembered. What is shown is that, held at the largest zoom that still fits the frame.
+  const [requested, setRequested] = useState(() => readZoom(browserStorage()));
+  const [frameWidth, setFrameWidth] = useState(() => document.documentElement.clientWidth);
+  const cap = zoomCap(frameWidth, BODY_WIDTH);
+  const zoom = effectiveZoom(requested, frameWidth, BODY_WIDTH);
+  const maxZoom = Math.min(ZOOM_MAX, cap);
 
   useEffect(() => {
     document.title = strings.pageTitle;
   }, [strings.pageTitle]);
 
-  // Remember the zoom level and tell the parent page how tall the iframe needs to be.
+  useEffect(() => {
+    const measure = () => setFrameWidth(document.documentElement.clientWidth);
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
+
+  useEffect(() => {
+    saveZoom(browserStorage(), requested);
+  }, [requested]);
+
+  // Tell the parent page how tall the iframe needs to be: the case at this zoom plus 150 px. The parent may not be
+  // listening yet on the first call, so repeat it once the page has settled.
   useLayoutEffect(() => {
-    saveZoom(browserStorage(), zoom);
-    const report = () => {
-      const top = controls.current ? controls.current.getBoundingClientRect().bottom + window.scrollY : 0;
-      const bottom = below.current ? below.current.offsetHeight : 0;
-      notifyParentHeight(Math.ceil(top + BODY_HEIGHT * zoom + bottom));
-    };
+    const report = () => notifyParentHeight(frameHeight(BODY_HEIGHT, zoom));
     report();
-    // The parent may not be listening yet on the first call, so repeat it once the page has settled.
     const timers = [setTimeout(report, 100), setTimeout(report, 500)];
-    window.addEventListener('resize', report);
-    return () => {
-      timers.forEach(clearTimeout);
-      window.removeEventListener('resize', report);
-    };
+    return () => timers.forEach(clearTimeout);
   }, [zoom]);
 
   const showPanel = calculator.panelOpen;
@@ -56,11 +69,11 @@ export function CalculatorApp() {
   return (
     <>
       <ZoomControls
-        controlsRef={controls}
         strings={strings}
         zoom={zoom}
-        onZoomOut={() => setZoom((value) => stepZoom(value, -1))}
-        onZoomIn={() => setZoom((value) => stepZoom(value, 1))}
+        maxZoom={maxZoom}
+        onZoomOut={() => setRequested(stepFromShown(zoom, -1))}
+        onZoomIn={() => setRequested(stepFromShown(zoom, 1))}
       />
       <div className="stage" style={{ height: BODY_HEIGHT * zoom }}>
         <div
@@ -69,21 +82,12 @@ export function CalculatorApp() {
           style={{ width: BODY_WIDTH, height: BODY_HEIGHT, transform: `scale(${zoom})` }}
         >
           <div
-            className="calc-body"
+            className={`calc-body${calculator.dragging ? ' is-dragging' : ''}`}
             data-powered-off={calculator.poweredOff || undefined}
             data-boot={calculator.bootSource ?? undefined}
             data-phase={calculator.phase}
           >
-            <div className="brand" aria-hidden="true">
-              {APP_NAME}
-            </div>
-            <Screen
-              strings={strings}
-              canvas={calculator.canvas}
-              loading={loading}
-              dragging={calculator.dragging}
-              toast={calculator.toast}
-            >
+            <Screen strings={strings} canvas={calculator.canvas} loading={loading} toast={calculator.toast}>
               {calculator.phase === 'failed' && !showPanel && (
                 <div className="screen-loading screen-failed" role="alert">
                   <span>{calculator.error ? strings.errors[calculator.error] : ''}</span>
@@ -110,7 +114,7 @@ export function CalculatorApp() {
           </div>
         </div>
       </div>
-      <div ref={below} className="below">
+      <div className="below">
         <button
           type="button"
           className="change-rom"

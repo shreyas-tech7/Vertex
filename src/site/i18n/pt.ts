@@ -2,11 +2,11 @@ import type { Strings } from './types.ts';
 
 export const pt: Strings = {
   htmlLang: 'pt',
-  title: '{brand}: calculadora TI-84 grátis online',
+  title: '{brand}: calculadora TI-84 sem anúncios online',
   description:
-    'Use uma calculadora TI-84 Plus CE grátis no seu navegador. O {brand} executa o TI-OS real no emulador CEmu, com uma ROM da sua própria calculadora.',
+    'Use uma calculadora TI-84 Plus CE sem anúncios no seu navegador. O {brand} executa o TI-OS real no emulador CEmu, com uma ROM da sua própria calculadora.',
   languageLabel: 'Idioma',
-  h1: 'Calculadora TI-84 grátis online',
+  h1: 'Calculadora TI-84 sem anúncios online',
   noticeLead: 'Site independente.',
   noticeBody:
     'O {brand} não é afiliado à Texas Instruments. Ele executa a TI-84 Plus CE em um emulador de código aberto.',
@@ -14,7 +14,7 @@ export const pt: Strings = {
   about: {
     heading: 'Sobre o {brand}',
     paragraphs: [
-      'Bem-vindo ao {brand}, uma calculadora gráfica TI-84 Plus CE gratuita que funciona no seu navegador. Ele usa o CEmu, um emulador de código aberto, para executar o TI-OS real em um hardware emulado. Você tem as mesmas teclas, os mesmos menus e os mesmos resultados da calculadora física, em qualquer dispositivo e sem instalar nada.',
+      'Bem-vindo ao {brand}, uma calculadora gráfica TI-84 Plus CE sem anúncios que funciona no seu navegador. Ele usa o CEmu, um emulador de código aberto, para executar o TI-OS real em um hardware emulado. Você tem as mesmas teclas, os mesmos menus e os mesmos resultados da calculadora física, em qualquer dispositivo e sem instalar nada.',
       'O {brand} é para estudantes, professores e qualquer pessoa que precise de uma calculadora gráfica para matemática, ciências, engenharia ou estatística. Você traz uma única coisa: um arquivo ROM da sua própria calculadora. Você o carrega uma vez e o {brand} se lembra dele.',
     ],
   },
@@ -197,7 +197,7 @@ export const pt: Strings = {
       {
         heading: 'Usar o {brand}',
         paragraphs: [
-          'O {brand} é gratuito para uso pessoal, escolar e profissional. Não o use para prejudicar outras pessoas nem para violar a lei.',
+          'O {brand} não tem anúncios. Você pode usá-lo para fins pessoais, escolares e profissionais. Não o use para prejudicar outras pessoas nem para violar a lei.',
         ],
       },
       {

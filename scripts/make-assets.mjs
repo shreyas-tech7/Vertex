@@ -38,13 +38,25 @@ await calculator.locator('.calc-body').screenshot({ path: 'public/preview.png', 
 await calculator.close();
 console.log('wrote public/preview.png');
 
+const fs = await import('node:fs');
+const preview = fs.readFileSync('public/preview.png').toString('base64');
+
+// The About picture: the top of Vertex's own drawing on a light tile, 256 x 256 so it stays sharp at 128 x 128.
+await shotHtml(
+  `<div style="position:relative;width:256px;height:256px;overflow:hidden;background:#f6f7f9">
+     <img src="data:image/png;base64,${preview}" style="position:absolute;left:12px;top:16px;width:232px;border-radius:8px">
+   </div>`,
+  'public/calculator-preview.png',
+  256,
+  256,
+);
+
 // Social image: white page, the name, one honest line, the preview.
-const preview = (await import('node:fs')).readFileSync('public/preview.png').toString('base64');
 await shotHtml(
   `<div style="width:1200px;height:630px;background:#fff;display:flex;align-items:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#333">
      <div style="padding:0 90px;flex:1">
        <div style="font-size:120px;font-weight:700;color:#000;line-height:1.05">Vertex</div>
-       <div style="font-size:40px;line-height:1.35;margin-top:16px;color:#555">A free TI-84 Plus CE calculator in your browser.</div>
+       <div style="font-size:40px;line-height:1.35;margin-top:16px;color:#555">An ad-free TI-84 Plus CE calculator in your browser.</div>
        <div style="font-size:26px;margin-top:28px;color:#666">Real TI-OS. Your own ROM. Nothing leaves your device.</div>
      </div>
      <img src="data:image/png;base64,${preview}" style="height:520px;margin-right:110px;border:1px solid #e0e0e0;border-radius:24px">

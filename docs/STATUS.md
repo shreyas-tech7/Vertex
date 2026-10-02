@@ -4,8 +4,22 @@ Honest state of the project. Anything unfinished, unverified, or different from 
 
 ## Current milestone
 
-R1 (redesign). The site, the emulator build, the ROM panel, input, storage and the tests are done. **Nothing here has run
-a real TI-OS ROM**, because no ROM was or may be obtained. See "Not verified" below.
+R2 (redesign, round 2) on `ti84-redesign`, draft PR into `main`. Done: service worker takeover, Ad-Free wording in nine
+languages, the new 258 x 604 original artwork with the 232 x 174 LCD, the capped zoom with the reference's height
+formula, the smaller white ROM panel with drop anywhere, the licence notices. **Nothing here has run a real TI-OS ROM**,
+because no ROM was or may be obtained. See "Not verified" below.
+
+## Needs the owner (not faked here)
+
+1. Dump the ROM from your own calculator with CEmu's ROM dump wizard only.
+2. Run the 16-item TI-OS checklist with that ROM.
+3. Compare with the live site at 1920x855 and 390x844 in a real browser (the live site was not fetched).
+
+## Known layout gaps (see `docs/VERIFICATION.md` F9)
+
+- Language button is 121.3 px wide against 126. About to Key Features is 469.9 against 442. Preview block is 1 px taller.
+  The whole page is 4227 against 4037. The phone frame is 754 at 100% against 700 (the +150 formula wins).
+- Firefox and WebKit were not re-run after the redesign.
 
 ## Not verified (needs a real ROM from the owner's own calculator)
 
@@ -24,13 +38,13 @@ a real TI-OS ROM**, because no ROM was or may be obtained. See "Not verified" be
 - The calculator body, key shapes and colors are original, not a copy of the TI faceplate. Layout, legends and matrix are exact.
 - Shift and Alt tapped alone are 2nd and ALPHA. Held with another key they act as plain PC modifiers.
 - A key is held at least 3 frames, and not re-pressed for 2 frames, even for a very short click.
-- At zoom levels wider than the viewport (200% on a phone) the page hides horizontal overflow, as the reference does.
+- Zoom is capped so the case never exceeds the frame (for example 135% at most in a 350 px frame). The requested level is kept.
 - No sound (the calculator has none), no USB or link port beyond variable sending, no debugger.
 
 ## Verification limits
 
 - **ti84calculator.io and the CEmu docs site were blocked** (403) from the build sandbox. The reference was the MIT
-  repo's own HTML. Vertex's language menu, notice and legal links are not compared against the live site, and the live
+  repo's own HTML (the task also forbids fetching the live site). Vertex's language menu, notice and legal links are not compared against the live site, and the live
   calculator box was not measured.
 - **Firefox and WebKit:** Playwright cannot download them here. See the report for what was run instead.
 - Translations were written by the agent. A native speaker should review them.

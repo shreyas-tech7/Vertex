@@ -1,3 +1,4 @@
+// Page markup adapted from github.com/bifdu9898/TI84Calculator (MIT), see THIRD_PARTY_NOTICES.md.
 import { APP_NAME } from '../core/brand.ts';
 import { fill, fillDeep } from './i18n/format.ts';
 import { STRINGS } from './i18n/index.ts';
@@ -84,6 +85,9 @@ function head(
     <meta property="og:type" content="website">
     <meta property="og:image" content="${siteUrl}og-image.png">
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="${escapeHtml(title)}">
+    <meta name="twitter:description" content="${escapeHtml(description)}">
+    <meta name="twitter:image" content="${siteUrl}og-image.png">
     <meta property="og:locale" content="${lang}">
     <meta name="theme-color" content="#ffffff">
     <link rel="stylesheet" href="/src/site/site.css">`;
@@ -153,7 +157,7 @@ function renderHome(lang: Lang, siteUrl: string): string {
             </div>
 
             <div class="calculator-preview">
-                <img src="/preview.png" alt="${escapeHtml(s.previewAlt)}" class="preview-image" width="240" height="521">
+                <img src="/calculator-preview.png" alt="${escapeHtml(s.previewAlt)}" class="preview-image" width="130" height="130">
             </div>
 
             <div class="section">

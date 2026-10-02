@@ -59,6 +59,33 @@ describe('copy', () => {
     },
   );
 
+  /** The natural way each language says "ad-free". Matched in lower case, so German "Werbefreier" counts for "werbefrei". */
+  const AD_FREE: Readonly<Record<Lang, string>> = {
+    en: 'ad-free',
+    fr: 'sans publicité',
+    de: 'werbefrei',
+    ja: '広告なし',
+    it: 'senza pubblicità',
+    es: 'sin anuncios',
+    pt: 'sem anúncios',
+    sv: 'reklamfri',
+    ru: 'без рекламы',
+  };
+
+  it.each(LANGS)('%s says ad-free in its H1, title, description and first About paragraph', (lang: Lang) => {
+    const s = STRINGS[lang];
+    const phrase = AD_FREE[lang];
+    expect(s.h1.toLowerCase(), `${lang} h1`).toContain(phrase);
+    expect(s.title.toLowerCase(), `${lang} title`).toContain(phrase);
+    expect(s.description.toLowerCase(), `${lang} description`).toContain(phrase);
+    expect(s.about.paragraphs[0]!.toLowerCase(), `${lang} about`).toContain(phrase);
+  });
+
+  it.each(LANGS)('%s no longer sells the site as free of charge', (lang: Lang) => {
+    const costWords = /(?<!ad-)\bfree\b|gratuit|kostenlos|無料|gratis|grátis|бесплатн/i;
+    for (const [path, text] of collect(STRINGS[lang])) expect(text, `${lang} ${path}`).not.toMatch(costWords);
+  });
+
   it('keeps filler and buzzwords out of the English copy', () => {
     const banned =
       /\b(seamless(ly)?|delve|pivotal|testament|it is important to note|not just|robust|leverage|cutting-edge|game-changing|unlock)\b/i;

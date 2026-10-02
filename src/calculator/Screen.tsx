@@ -8,16 +8,15 @@ interface ScreenProps {
   strings: CalcStrings;
   canvas: RefObject<HTMLCanvasElement | null>;
   loading: boolean;
-  dragging: boolean;
   toast: Toast | null;
   children?: ReactNode;
 }
 
-/** The LCD: a 320 x 240 canvas, drawn with nearest-neighbour scaling, with panels and messages laid over it. */
-export function Screen({ strings, canvas, loading, dragging, toast, children }: ScreenProps) {
+/** The LCD: a 320 x 240 canvas drawn at 232 x 174 with smooth scaling, with panels and messages laid over it. */
+export function Screen({ strings, canvas, loading, toast, children }: ScreenProps) {
   return (
     <div
-      className={`screen${dragging ? ' is-dragging' : ''}`}
+      className="screen"
       style={{ left: SCREEN.x, top: SCREEN.y, width: SCREEN.width, height: SCREEN.height }}
     >
       <canvas

@@ -2,11 +2,11 @@ import type { Strings } from './types.ts';
 
 export const fr: Strings = {
   htmlLang: 'fr',
-  title: '{brand} : calculatrice TI-84 gratuite en ligne',
+  title: '{brand} : calculatrice TI-84 sans publicité en ligne',
   description:
-    'Utilisez gratuitement une calculatrice TI-84 Plus CE dans votre navigateur. {brand} fait tourner le vrai TI-OS sur l’émulateur CEmu, avec une ROM issue de votre propre calculatrice.',
+    'Utilisez une calculatrice TI-84 Plus CE sans publicité dans votre navigateur. {brand} fait tourner le vrai TI-OS sur l’émulateur CEmu, avec une ROM issue de votre propre calculatrice.',
   languageLabel: 'Langue',
-  h1: 'Calculatrice TI-84 gratuite en ligne',
+  h1: 'Calculatrice TI-84 sans publicité en ligne',
   noticeLead: 'Site indépendant.',
   noticeBody:
     '{brand} n’est pas affilié à Texas Instruments. Il fait tourner la TI-84 Plus CE sur un émulateur open source.',
@@ -14,7 +14,7 @@ export const fr: Strings = {
   about: {
     heading: 'À propos de {brand}',
     paragraphs: [
-      'Bienvenue sur {brand}, une calculatrice graphique TI-84 Plus CE gratuite qui fonctionne dans votre navigateur. Elle utilise CEmu, un émulateur open source, pour faire tourner le vrai TI-OS sur un matériel émulé. Vous retrouvez les mêmes touches, les mêmes menus et les mêmes résultats que sur la calculatrice, sur n’importe quel appareil, sans rien installer.',
+      'Bienvenue sur {brand}, une calculatrice graphique TI-84 Plus CE sans publicité qui fonctionne dans votre navigateur. Elle utilise CEmu, un émulateur open source, pour faire tourner le vrai TI-OS sur un matériel émulé. Vous retrouvez les mêmes touches, les mêmes menus et les mêmes résultats que sur la calculatrice, sur n’importe quel appareil, sans rien installer.',
       '{brand} s’adresse aux élèves, aux étudiants, aux enseignants et à toute personne qui a besoin d’une calculatrice graphique pour les maths, les sciences, l’ingénierie ou les statistiques. Vous apportez une seule chose : un fichier ROM de votre propre calculatrice. Vous le chargez une fois et {brand} s’en souvient.',
     ],
   },
@@ -200,7 +200,7 @@ export const fr: Strings = {
       {
         heading: 'Utiliser {brand}',
         paragraphs: [
-          '{brand} est gratuit pour un usage personnel, scolaire et professionnel. Ne l’utilisez pas pour nuire à autrui ni pour enfreindre la loi.',
+          '{brand} ne contient aucune publicité. Vous pouvez l’utiliser pour un usage personnel, scolaire et professionnel. Ne l’utilisez pas pour nuire à autrui ni pour enfreindre la loi.',
         ],
       },
       {

@@ -3,42 +3,43 @@
 What was run, how to repeat it, and what came out. Nothing here ran a real TI-OS ROM. No ROM was or may be obtained.
 See `docs/STATUS.md` for what that leaves unverified.
 
-| Check                                                                        | Result                                                | Repeat with                                                                   |
-| ---------------------------------------------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Typecheck, lint, 345 unit tests, build, scan                                 | pass                                                  | `npm run check`                                                               |
-| 144 browser tests (Chromium 72, phone 72)                                    | pass                                                  | `npm run test:e2e`                                                            |
-| 29 checks in Firefox 157 (28 pages and the emulator)                         | pass                                                  | `scripts/browser-check.mjs firefox <binary>`                                  |
-| 30 checks in WebKitGTK 2.52.6 (28 pages, the emulator, a recorder self-test) | pass                                                  | `scripts/browser-check.mjs webkit <MiniBrowser>`                              |
-| Zero requests to any other origin                                            | pass                                                  | `node scripts/network-log.mjs`                                                |
-| No ROM, OS image, TI art or TI host anywhere                                 | pass                                                  | `npm run scan`                                                                |
-| Computed styles match the reference page                                     | 22 of 27 element pairs identical, 5 differ on purpose | `node scripts/compare-reference.mjs`                                          |
-| Source archive rebuilds the same WebAssembly                                 | pass                                                  | unpack `public/source/vertex-emulator-source.tar.gz`, run `emulator/build.sh` |
+| Check                                                    | Result                                                          | Repeat with                                                                   |
+| -------------------------------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Typecheck, lint, 371 unit tests (1 skipped), build, scan | pass                                                            | `npm run check`                                                               |
+| 192 browser tests (Chromium 96, phone 96)                | pass                                                            | `npm run test:e2e`                                                            |
+| Zero requests to any other origin                        | pass                                                            | `node scripts/network-log.mjs`                                                |
+| No ROM, OS image, TI art or TI host anywhere             | pass                                                            | `npm run scan`                                                                |
+| Layout targets at 1920x855 and 390x844                   | 36 of 41 match, 5 do not (listed in F9)                         | `node scripts/measure-targets.mjs`                                            |
+| Computed styles against the reference page               | 24 of 27 pairs identical at both sizes, 3 differ (listed in F1) | `node scripts/compare-reference.mjs`                                          |
+| Firefox and WebKit                                       | **not run in this round** (no binary here, see F5)              | `scripts/browser-check.mjs firefox <binary>`, `... webkit <MiniBrowser>`      |
+| Source archive rebuilds the same WebAssembly             | not re-run (emulator unchanged since the last round)            | unpack `public/source/vertex-emulator-source.tar.gz`, run `emulator/build.sh` |
+
+Run on 2026-10-02 against the commit that carries this file. The browser was Chromium 1194 from `/opt/pw-browsers`
+(`VERTEX_CHROMIUM_PATH`). Playwright's own headless Chromium hides scrollbars, so no 15 px scrollbar was in play.
 
 ## F1. Screenshots and comparison
 
-- Vertex at 1440x900 and 390x844: `docs/screenshots/vertex-1440x900.png`, `docs/screenshots/vertex-390x844.png`.
-- **The live ti84calculator.io could not be fetched** (the sandbox's egress policy answers 403, so nothing was routed around
-  it). The reference was the MIT repo's own `index.html`, served locally with its iframe replaced by a blank page, so no
-  request to TI or Pearson was made (`foreign requests: reference [], vertex []` in the script output).
-- 27 element pairs, 28 computed properties each, plus x, width and (for one-line elements) height, at both viewports:
+- Vertex at 1920x855 and 390x844: `docs/screenshots/vertex-1920x855.png`, `docs/screenshots/vertex-390x844.png`. Raw numbers:
+  `docs/screenshots/measure-targets.json` and `docs/screenshots/compare-reference.json`.
+- **The live ti84calculator.io was not fetched** (the task forbids it). The reference is the MIT repo's own `index.html`,
+  served locally with its iframe replaced by a blank page and its picture replaced by a grey square, so no request to TI or
+  Pearson was made (`foreign requests: reference [], vertex []`). The live-site numbers in F9 are the targets from the task.
+- 27 element pairs, 28 computed properties each, plus x, width and (for one-line elements) height, at 1920x855 and 390x844:
 
 ```
-== desktop 1440x900 ==   22 identical, 5 differ
-differs  top bar        display: block -> flex, gap: normal -> 16px            (room for the language menu)
-differs  site name      display: inline -> block, text is "Vertex"             (flex item, shorter name)
-differs  preview frame  box.height 137.6 -> 526.2                              (a calculator screenshot, not a 128 px icon)
-differs  preview image  box.width 130 -> 240                                   (same reason)
-differs  footer link    position and width                                     (different link text)
-== phone 390x844 ==     22 identical, 5 differ   (the same five)
+== desktop 1920x855 ==   24 identical, 3 differ        document height reference 4065, Vertex 4227
+differs  top bar        display: block -> flex, gap: normal -> 16px, height 74.3 -> 80
+differs  site name      display: inline -> block, width 160.1 -> 65.7 (the name is "Vertex", a flex item)
+differs  footer link    x 949.8 -> 882.4, width 56.5 -> 40.7           (different link text)
+== phone 390x844 ==     24 identical, 3 differ (the same three)        document height reference 5358, Vertex 5867
 ```
 
-Identical, including height where text cannot change it: body, calculator band, band wrapper, H1, iframe, container,
-content, About heading and paragraph, features grid, feature card and its title and text, usage steps and step,
-perfect-for box and line, list, CTA section, CTA button (height too), footer, footer line. The top bar is 73 px tall at
-desktop width and 59.1 px under 768 px, the same as the reference.
+The top bar is 80 px (desktop) and 70 px (phone) in Vertex, which are the live-site targets. The repo's `index.html`
+measures 74.3 and 59.1 because its bar has a different structure from the live one, so that pair is expected to differ.
+The preview frame and image now compare identical (128 px content box, 1 px border, 40 px margins).
 
-Not compared, because the reference repo does not have them and the live site was unreachable: the language menu,
-the independent-site notice, the privacy and terms links. They use the fallback tokens from the task.
+Not compared, because the reference has no such element: the language menu, the independent-site notice card (the
+reference page has none), the privacy and terms links.
 
 ## F2. Keys
 
@@ -59,11 +60,24 @@ the key matrix back from CEmu's own keypad (`vertex_key_state`).
 ## F3. Zoom
 
 `e2e/calculator.spec.ts` and `src/calculator/zoom.test.ts`: 50% to 200% in 10% steps (no float drift), plus and minus
-disable at the ends, `transform-origin` is the top centre (`170px 0px`), transition `transform 0.3s ease`, the box is 680 px
-wide at 200% and 170 px at 50%, the level is in `localStorage` (`vertex_zoom_level`) and survives a reload. On the
-landing page, the iframe's height follows: at 200% it is about 738 px taller than at 100%, at 50% about 369 px shorter. Messages go
-to the page's own origin. The parent checks `event.origin` and `event.source`, and a message from the parent itself is
-ignored. Pass.
+disable at the ends, `transform-origin` is the top centre (`129px 0px`), transition `transform 0.3s ease`, the case is
+516 px wide at 200% and 129 px at 50%, the requested level is in `localStorage` (`vertex_zoom_level`) and survives a
+reload. The case is never wider than the frame at 100%: the scale is capped at `floor(frameWidth / 258 * 100) / 100`
+(and at 2), plus is disabled at the cap, and the displayed percentage is the capped one. The landing page iframe
+height follows `ceil(604 x zoom + 150)`: 754 at 100%, 1358 at 200%, 452 at 50% (tested). Messages go to the page's own
+origin. The parent checks `event.origin` and `event.source`, and a message from the parent itself is ignored. Pass.
+
+Phone matrix, measured on the landing page (`node scripts/measure-targets.mjs`). The frame is the viewport minus 40.
+
+| Viewport | Frame | Cap  | Requested 50% | Requested 100% | Requested 200% | Frame height at 200% |
+| -------- | ----- | ---- | ------------- | -------------- | -------------- | -------------------- |
+| 320      | 280   | 1.08 | 50%           | 100%           | 108%           | 803                  |
+| 360      | 320   | 1.24 | 50%           | 100%           | 124%           | 899                  |
+| 390      | 350   | 1.35 | 50%           | 100%           | 135%           | 966                  |
+| 430      | 390   | 1.51 | 50%           | 100%           | 151%           | 1063                 |
+
+In every cell the case fit inside the frame, and plus was disabled only where the cap bound. At 50% the frame is 700 px
+because of the phone's 700 px minimum height. At 100% it is 754 (see F9).
 
 ## F4. ROM panel and storage
 
@@ -72,7 +86,9 @@ file and 4 MB of zeros get "That file is not a TI-84 Plus CE ROM." or "That file
 is accepted, stored in IndexedDB (name and size read back), and the calculator runs. A reload boots from the stored ROM.
 Hiding the tab writes a state of more than 1 MB, and the next load boots from it (`data-boot="state"`). Change ROM opens
 Replace, Remove and Cancel. A bad replacement leaves the running calculator alone. Remove deletes both records. Dropping a
-ROM on the panel works. With the WebAssembly download delayed, the loading state shows. With it blocked, the failure message
+ROM anywhere on the calculator works (tested on a key and on the arrow pad, while another ROM is running). A reload with a
+stored ROM never shows the panel and `data-phase` is never `needRom` (a MutationObserver installed before the page
+scripts records every phase). The panel fits the LCD in all nine languages (tested). With the WebAssembly download delayed, the loading state shows. With it blocked, the failure message
 shows. Unit tests cover the storage layer with a memory backend (save, restore, wrong-ROM state refused, replace drops
 state, remove clears both, damaged records ignored). The boot is real, using the synthetic ROM (4 MiB of 0xFF with only
 the certificate CEmu checks, built in memory, no TI code). Pass.
@@ -82,6 +98,10 @@ five-second stall, pause freezes the frame count and lifts held keys, resume res
 boots another. Pass.
 
 ## F5. Console errors, every page, three engines
+
+**Round 2 status:** only the Chromium and phone rows were re-run after the redesign (the 192 browser tests fail on any console
+error, page error or off-origin request). The Firefox and WebKit rows below are from the earlier build. No Firefox or WebKit
+binary exists in this sandbox, so they were not repeated and should be run again (`scripts/browser-check.mjs`).
 
 | Engine                        | Pages | Console errors | Page errors | CSP violations | Third-party requests |
 | ----------------------------- | ----- | -------------- | ----------- | -------------- | -------------------- |
@@ -100,9 +120,8 @@ recorder catches a deliberate `console.error`.
 ## F6. Network
 
 ```
-259 requests while visiting 27 pages, loading a ROM, pressing a key and reloading with service workers on
-  259  http://localhost:4173
-no request left the site's own origin
+no request left the site's own origin   (node scripts/network-log.mjs, all pages, ROM load, key press, reload)
+requests were /index.html, /calculator.html, /privacy, /terms, own scripts, styles, images, manifest and sw.js
 ```
 
 Every Playwright test also fails on any request outside the base origin. The CSP allows `'self'` and
@@ -111,7 +130,7 @@ Every Playwright test also fails on any request outside the base origin. The CSP
 ## F7. Forbidden content
 
 ```
-scanned 131 repository files, 50 build files, 400 archive entries
+scanned 133 repository files, 51 build files, 400 archive entries
 checked for: ROM and OS files (.rom .8eu .8ek .h84statej .8xu .8cu), ROM-shaped binaries, TI artwork names, and references to the proprietary emulator hosts
 clean: no ROM files, no OS images, no TI art, no references to TI or Pearson emulator hosts
 ```
@@ -127,3 +146,51 @@ versions. For each of the nine home pages, the test requests all nine dropdown l
 `hreflang`. The iframe shows the ROM panel in the page's language. `copy.test.ts` checks that all nine have the same shape
 and placeholders, that nothing is left in English, and that no string has an em dash, en dash, semicolon, spaced hyphen
 or banned phrase. Pass. The translations were written by the agent and have not had a native review.
+
+## F9. Layout targets (built page, Chromium, `node scripts/measure-targets.mjs`)
+
+Desktop 1920x855: 28 of 32 match, 4 do not. Phone 390x844: 8 of 9 match.
+
+| Target                                    | Wanted                               | Measured           | Result             |
+| ----------------------------------------- | ------------------------------------ | ------------------ | ------------------ |
+| Top bar (no height set)                   | 80                                   | 80                 | match              |
+| Language button width                     | 126                                  | 121.3              | **off by 4.7 px**  |
+| Language button height                    | 39                                   | 39                 | match              |
+| H1 top, height, font                      | 120, 51.2, 32px bold #333            | same               | match              |
+| Notice width, height, top                 | 680, about 70, 171                   | 680, 70.2, 171.2   | match              |
+| Iframe width, height, top                 | 600, 754, about 261                  | 600, 754, 261.3    | match              |
+| Zoom button height                        | 38                                   | 38                 | match              |
+| Case size and position in the frame       | 258x604 at 171,78                    | same               | match              |
+| LCD size and position in the case         | 232x174 at 13,29                     | same               | match              |
+| About heading to Key Features heading     | 442                                  | 469.9              | **off by 27.9 px** |
+| Preview block height                      | 136.6                                | 137.6              | **off by 1 px**    |
+| Preview image box                         | 130x130                              | 130x130            | match              |
+| Feature card width, gap                   | 260, 20                              | 260, 20            | match              |
+| Footer width, background, border, padding | 900, #fafafa, 1px #e0e0e0, 30px 40px | same               | match              |
+| Whole page height                         | 4037                                 | 4227               | **off by 190 px**  |
+| Phone top bar                             | 70                                   | 70                 | match              |
+| Phone H1 top, height (two lines)          | 110, 102.4                           | 110, 102.4         | match              |
+| Phone iframe width                        | 350                                  | 350                | match              |
+| Phone iframe height at 100%               | 700                                  | 754                | **off by 54 px**   |
+| Phone case 258 wide, centred, unclipped   | yes                                  | x 46 to 304 of 350 | match              |
+| Phone horizontal page scroll              | none                                 | none               | match              |
+
+Why the five differ (none was padded or tuned to hide it):
+
+- **Language button 121.3 wide.** The button label is Vertex's own text, so its width follows the label. Padding was left at
+  the reference's 8px 16px. Height matches.
+- **About to Key Features 469.9.** Each About paragraph wraps to three lines at 1920 px. With one paragraph at two lines the
+  distance would be about 443. The copy is Vertex's own in nine languages and was not cut to hit the number.
+- **Preview block 137.6.** It compares identical to the repo's `index.html` in `compare-reference.mjs`, so the 1 px is
+  probably line-box rounding from the live site's font metrics. A 1 px text-height gap can be fonts.
+- **Whole page 4227.** The notice card (about 70 px plus margin), the longer About copy (28 px) and the extra footer lines
+  (open source, privacy and terms) add up to the 190 px.
+- **Phone iframe 754.** Target 700 conflicts with the rule that the frame is `calcHeight x zoom + 150`, which is 754 at
+  100%. The formula won (see `docs/DECISIONS.md`). The CSS minimum is 700 and applies at zoom levels below 100%.
+
+## F10. Not checked
+
+- Firefox and WebKit after the redesign. The live site compared side by side in a real browser. The 16-item TI-OS checklist
+  and every behaviour of TI-OS itself, because no ROM was or may be obtained.
+- The ROM panel's wording and the artwork were not reviewed by a person. The legends are font dependent, and a slight
+  CATALOG and space touch can occur with other fonts.

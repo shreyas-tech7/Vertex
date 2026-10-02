@@ -1,0 +1,425 @@
+{
+  "rows": [
+    {
+      "group": "desktop 1920x855",
+      "name": "top bar height (no height set)",
+      "target": 80,
+      "actual": 80,
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "language button width",
+      "target": 126,
+      "actual": 121.3,
+      "result": "off by 4.7 px"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "language button height",
+      "target": 39,
+      "actual": 39,
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "H1 top",
+      "target": 120,
+      "actual": 120,
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "H1 height",
+      "target": 51.2,
+      "actual": 51.2,
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "H1 font",
+      "target": "32px 700 rgb(51, 51, 51)",
+      "actual": "32px 700 rgb(51, 51, 51)",
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "notice width",
+      "target": 680,
+      "actual": 680,
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "notice height (about 70)",
+      "target": 70,
+      "actual": 70.2,
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "notice top",
+      "target": 171,
+      "actual": 171.2,
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "iframe width",
+      "target": 600,
+      "actual": 600,
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "iframe height",
+      "target": 754,
+      "actual": 754,
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "iframe top (about 261)",
+      "target": 261,
+      "actual": 261.3,
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "zoom button height",
+      "target": 38,
+      "actual": 38,
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "case width",
+      "target": 258,
+      "actual": 258,
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "case height",
+      "target": 604,
+      "actual": 604,
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "case x in frame",
+      "target": 171,
+      "actual": 171,
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "case y in frame",
+      "target": 78,
+      "actual": 78,
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "LCD width",
+      "target": 232,
+      "actual": 232,
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "LCD height",
+      "target": 174,
+      "actual": 174,
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "LCD x in case",
+      "target": 13,
+      "actual": 13,
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "LCD y in case",
+      "target": 29,
+      "actual": 29,
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "About heading to Key Features heading",
+      "target": 442,
+      "actual": 469.9,
+      "result": "off by 27.9 px"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "preview block height",
+      "target": 136.6,
+      "actual": 137.6,
+      "result": "off by 1 px"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "preview image box width",
+      "target": 130,
+      "actual": 130,
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "preview image box height",
+      "target": 130,
+      "actual": 130,
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "feature card width",
+      "target": 260,
+      "actual": 260,
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "feature card gap",
+      "target": 20,
+      "actual": 20,
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "footer width",
+      "target": 900,
+      "actual": 900,
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "footer background",
+      "target": "rgb(250, 250, 250)",
+      "actual": "rgb(250, 250, 250)",
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "footer border",
+      "target": "1px rgb(224, 224, 224)",
+      "actual": "1px rgb(224, 224, 224)",
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "footer padding",
+      "target": "30px 40px",
+      "actual": "30px 40px",
+      "result": "match"
+    },
+    {
+      "group": "desktop 1920x855",
+      "name": "whole page height",
+      "target": 4037,
+      "actual": 4227,
+      "result": "off by 190 px"
+    },
+    {
+      "group": "phone 390x844",
+      "name": "top bar height",
+      "target": 70,
+      "actual": 70,
+      "result": "match"
+    },
+    {
+      "group": "phone 390x844",
+      "name": "H1 top",
+      "target": 110,
+      "actual": 110,
+      "result": "match"
+    },
+    {
+      "group": "phone 390x844",
+      "name": "H1 height (two lines)",
+      "target": 102.4,
+      "actual": 102.4,
+      "result": "match"
+    },
+    {
+      "group": "phone 390x844",
+      "name": "iframe width (viewport minus 40)",
+      "target": 350,
+      "actual": 350,
+      "result": "match"
+    },
+    {
+      "group": "phone 390x844",
+      "name": "iframe height at 100% (target 700, formula gives 754)",
+      "target": 700,
+      "actual": 754,
+      "result": "off by 54 px"
+    },
+    {
+      "group": "phone 390x844",
+      "name": "case width",
+      "target": 258,
+      "actual": 258,
+      "result": "match"
+    },
+    {
+      "group": "phone 390x844",
+      "name": "case centred in frame (x)",
+      "target": 46,
+      "actual": 46,
+      "result": "match"
+    },
+    {
+      "group": "phone 390x844",
+      "name": "case never clipped",
+      "target": "inside the frame",
+      "actual": "46 to 304 of 350",
+      "result": "match"
+    },
+    {
+      "group": "phone 390x844",
+      "name": "no horizontal page scroll",
+      "target": true,
+      "actual": true,
+      "result": "match"
+    }
+  ],
+  "matrix": [
+    {
+      "viewport": 320,
+      "frameWidth": 280,
+      "requested": "50%",
+      "shown": "50%",
+      "actualScale": 0.5,
+      "caseWidth": 129,
+      "fitsFrame": true,
+      "plusDisabled": false,
+      "iframeHeight": 700
+    },
+    {
+      "viewport": 320,
+      "frameWidth": 280,
+      "requested": "100%",
+      "shown": "100%",
+      "actualScale": 1,
+      "caseWidth": 258,
+      "fitsFrame": true,
+      "plusDisabled": false,
+      "iframeHeight": 754
+    },
+    {
+      "viewport": 320,
+      "frameWidth": 280,
+      "requested": "200%",
+      "shown": "108%",
+      "actualScale": 1.08,
+      "caseWidth": 278.6,
+      "fitsFrame": true,
+      "plusDisabled": true,
+      "iframeHeight": 803
+    },
+    {
+      "viewport": 360,
+      "frameWidth": 320,
+      "requested": "50%",
+      "shown": "50%",
+      "actualScale": 0.5,
+      "caseWidth": 129,
+      "fitsFrame": true,
+      "plusDisabled": false,
+      "iframeHeight": 700
+    },
+    {
+      "viewport": 360,
+      "frameWidth": 320,
+      "requested": "100%",
+      "shown": "100%",
+      "actualScale": 1,
+      "caseWidth": 258,
+      "fitsFrame": true,
+      "plusDisabled": false,
+      "iframeHeight": 754
+    },
+    {
+      "viewport": 360,
+      "frameWidth": 320,
+      "requested": "200%",
+      "shown": "124%",
+      "actualScale": 1.24,
+      "caseWidth": 319.9,
+      "fitsFrame": true,
+      "plusDisabled": true,
+      "iframeHeight": 899
+    },
+    {
+      "viewport": 390,
+      "frameWidth": 350,
+      "requested": "50%",
+      "shown": "50%",
+      "actualScale": 0.5,
+      "caseWidth": 129,
+      "fitsFrame": true,
+      "plusDisabled": false,
+      "iframeHeight": 700
+    },
+    {
+      "viewport": 390,
+      "frameWidth": 350,
+      "requested": "100%",
+      "shown": "100%",
+      "actualScale": 1,
+      "caseWidth": 258,
+      "fitsFrame": true,
+      "plusDisabled": false,
+      "iframeHeight": 754
+    },
+    {
+      "viewport": 390,
+      "frameWidth": 350,
+      "requested": "200%",
+      "shown": "135%",
+      "actualScale": 1.35,
+      "caseWidth": 348.3,
+      "fitsFrame": true,
+      "plusDisabled": true,
+      "iframeHeight": 966
+    },
+    {
+      "viewport": 430,
+      "frameWidth": 390,
+      "requested": "50%",
+      "shown": "50%",
+      "actualScale": 0.5,
+      "caseWidth": 129,
+      "fitsFrame": true,
+      "plusDisabled": false,
+      "iframeHeight": 700
+    },
+    {
+      "viewport": 430,
+      "frameWidth": 390,
+      "requested": "100%",
+      "shown": "100%",
+      "actualScale": 1,
+      "caseWidth": 258,
+      "fitsFrame": true,
+      "plusDisabled": false,
+      "iframeHeight": 754
+    },
+    {
+      "viewport": 430,
+      "frameWidth": 390,
+      "requested": "200%",
+      "shown": "151%",
+      "actualScale": 1.51,
+      "caseWidth": 389.6,
+      "fitsFrame": true,
+      "plusDisabled": true,
+      "iframeHeight": 1063
+    }
+  ]
+}
