@@ -12,7 +12,7 @@ The original from-scratch plan (milestones M1 to M8 in `docs/SPEC.md`) is replac
 ### Part A: site shell
 
 - [x] Landing page from the reference CSS: top bar, H1, notice, iframe, About, preview, six cards, How to Use, Perfect For, Supported Functions, System Requirements, CTA, footer
-- [x] Computed styles match the reference repo's page on 26 element pairs at 1440x900 and 390x844 (`npm run compare`)
+- [x] Computed styles match the reference repo's page on 27 element pairs at 1440x900 and 390x844 (`npm run compare`)
 - [~] Match against the live ti84calculator.io (blocked here, see STATUS.md)
 - [x] Standalone calculator page with zoom controls (50 to 200%, 10% steps, top-centre scaling, localStorage)
 - [x] Height messages to the parent: own origin only, origin and source checked
