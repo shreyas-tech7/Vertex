@@ -3,11 +3,13 @@
  * with just enough certificate structure for CEmu's validation to accept it as a TI-84 Plus CE image. The CPU
  * runs nothing useful from it, so the LCD stays blank, but the whole ROM -> emulator pipeline can be exercised
  * without a real ROM. It is built in memory and never written to the repository.
+ *
+ * The function is self-contained on purpose: browser tests serialize it with toString() and run it in the page.
  */
 export const SYNTHETIC_ROM_SIZE = 0x400000;
 
 export function buildSyntheticRom(): Uint8Array {
-  const rom = new Uint8Array(SYNTHETIC_ROM_SIZE).fill(0xff);
+  const rom = new Uint8Array(0x400000).fill(0xff);
   // Certificate fields CEmu looks for at 0x20000 (see emu_load in core/emu.c): an outer 0x800F field that holds
   // 0x8012 (model 0x13 = 83/84 CE), 0x8021, 0x8032, 0x80A1 and 0x80C2 (device 0x00 = 84 Plus CE).
   const inner = [

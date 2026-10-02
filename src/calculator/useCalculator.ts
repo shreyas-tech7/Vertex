@@ -32,6 +32,7 @@ export function useCalculator(strings: CalcStrings, brand: string) {
   const [held, setHeld] = useState<ReadonlySet<KeyId>>(new Set());
   const [poweredOff, setPoweredOff] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [bootSource, setBootSource] = useState<'state' | 'rom' | null>(null);
 
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const clientRef = useRef<EmulatorClient | null>(null);
@@ -152,6 +153,7 @@ export function useCalculator(strings: CalcStrings, brand: string) {
       if (!alive) return;
       if (result.ok) {
         romSize.current = stored.size;
+        setBootSource(result.from);
         setPhase('running');
         if (document.visibilityState === 'hidden') client.pause();
       } else {
@@ -271,6 +273,7 @@ export function useCalculator(strings: CalcStrings, brand: string) {
         return false;
       }
       romSize.current = buffer.byteLength;
+      setBootSource('rom');
       setHasRom(true);
       setPanelOpen(false);
       setPhase('running');
@@ -289,6 +292,7 @@ export function useCalculator(strings: CalcStrings, brand: string) {
       /* nothing stored, or storage is blocked */
     }
     romSize.current = undefined;
+    setBootSource(null);
     keyboard.releaseAll();
     holders.releaseAll();
     blankScreen();
@@ -389,6 +393,7 @@ export function useCalculator(strings: CalcStrings, brand: string) {
     held,
     poweredOff,
     dragging,
+    bootSource,
     canvas,
     holders,
     loadRom,

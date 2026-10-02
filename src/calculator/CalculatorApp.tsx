@@ -68,7 +68,12 @@ export function CalculatorApp() {
           className="calculatorDiv"
           style={{ width: BODY_WIDTH, height: BODY_HEIGHT, transform: `scale(${zoom})` }}
         >
-          <div className="calc-body" data-powered-off={calculator.poweredOff || undefined}>
+          <div
+            className="calc-body"
+            data-powered-off={calculator.poweredOff || undefined}
+            data-boot={calculator.bootSource ?? undefined}
+            data-phase={calculator.phase}
+          >
             <div className="brand" aria-hidden="true">
               {APP_NAME}
             </div>

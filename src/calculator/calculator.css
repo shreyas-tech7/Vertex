@@ -353,7 +353,13 @@ body {
   left: 0;
   top: 0;
   height: 100%;
-  touch-action: none;
+  /* The container spans the whole body, so only the keys themselves may take pointer events. */
+  pointer-events: none;
+}
+
+.keypad .key,
+.keypad .arrow-pad {
+  pointer-events: auto;
 }
 
 .key {

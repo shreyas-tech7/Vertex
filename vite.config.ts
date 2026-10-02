@@ -40,9 +40,9 @@ function vertexPages(): Plugin {
     },
     config() {
       const pages = generatePages();
-      const input: Record<string, string> = { calculator: resolve(__dirname, 'calculator.html') };
+      const input: Record<string, string> = { calculator: resolve(import.meta.dirname, 'calculator.html') };
       for (const page of pages)
-        input[page.file.replace(/\/?index\.html$/, '') || 'index'] = resolve(__dirname, page.file);
+        input[page.file.replace(/\/?index\.html$/, '') || 'index'] = resolve(import.meta.dirname, page.file);
       return { build: { rollupOptions: { input } } };
     },
     transformIndexHtml: {
