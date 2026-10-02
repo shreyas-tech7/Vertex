@@ -5,6 +5,8 @@ No ads, no accounts, no tracking.
 
 > Vertex is an independent project. It is not affiliated with or endorsed by Texas Instruments. TI-84 Plus is a trademark of Texas Instruments.
 
+**Live:** https://shreyas-tech7.github.io/Vertex/
+
 _Work in progress — see `docs/PLAN.md` for what exists and `docs/STATUS.md` for honest status._
 
 ## Running locally
@@ -15,6 +17,11 @@ npm run dev        # http://localhost:5173
 npm run check      # typecheck, lint, unit tests, build
 npm run test:e2e   # Playwright (Chromium, WebKit, phone viewport)
 ```
+
+## Deploying
+
+Every push to `main` runs `.github/workflows/pages.yml`, which builds the app and publishes `dist/` to the `gh-pages` branch
+(GitHub Pages source: `gh-pages` / root). The build uses relative asset paths, so it also works unchanged on any static host.
 
 ## License
 

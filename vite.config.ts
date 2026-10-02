@@ -5,6 +5,9 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  // Relative asset URLs so the same build works at a domain root (Vercel) and under a
+  // GitHub Pages project path (https://<user>.github.io/Vertex/).
+  base: './',
   plugins: [
     react(),
     tailwindcss(),
