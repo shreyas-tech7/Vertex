@@ -89,6 +89,10 @@ export default defineConfig({
         globIgnores: ['source/**'],
         navigateFallback: null,
         cleanupOutdatedCaches: true,
+        // A new build takes over on its own. Without these two the plugin only waits for a SKIP_WAITING message that
+        // nothing sends, so returning visitors stay on the old build until every tab closes.
+        skipWaiting: true,
+        clientsClaim: true,
       },
     }),
   ],
