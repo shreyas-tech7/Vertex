@@ -20,11 +20,13 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Typecheck, lint, unit tests, build
+      - name: Typecheck, lint, unit tests, build, forbidden-content scan
         run: npm run check
+      - name: Generated pages are committed
+        run: git diff --exit-code
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium webkit
-      - name: End-to-end tests (Chromium, WebKit, phone viewport)
+        run: npx playwright install --with-deps chromium firefox webkit
+      - name: End-to-end tests (Chromium, Firefox, WebKit, phone viewport)
         run: npm run test:e2e
       - uses: actions/upload-artifact@v4
         if: failure()

@@ -1,0 +1,8 @@
+{
+  "cemuCommit": "54f4a9a4eb9e1c89a7c405705b1a1fc1ab428da2",
+  "emscripten": "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 4.0.10 (b7dc6e5747465580df5984e723b9d1f10d8e804b)",
+  "files": {
+    "vertex-cemu.js": "b39bb36df22dfc568c9585f6b5facbd6f39f44b0c6c6ff37c58656aea3948de3",
+    "vertex-cemu.wasm": "ba3239b53a8f8a1cf75b2203448c88a5ff4630d0bc0456d995b5050df6c86c21"
+  }
+}

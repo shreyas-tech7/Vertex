@@ -1,3 +1,8 @@
+> **Superseded in part (branch `ti84-redesign`).** The calculator is no longer a from-scratch engine. Vertex now runs
+> CEmu, an open source TI-84 Plus CE emulator, compiled to WebAssembly, with a ROM from the visitor's own calculator.
+> Sections 3 to 8 below describe the original from-scratch plan and are kept for history. `docs/DECISIONS.md` (entries
+> tagged R1), `docs/ARCHITECTURE.md` and `docs/STATUS.md` describe what is built now.
+
 # Build Vertex: a free, TI-84 Plus compatible graphing calculator
 
 You're an autonomous coding agent working in a git repository. Your job is to build a free web app that works like a TI-84 Plus graphing calculator. Someone who knows the real calculator should be able to press the same keys in the same order and get the same result: arithmetic, graphs, tables, statistics, matrices, and their own TI-BASIC programs. It runs in any modern browser, works offline, costs nothing, and has no ads, accounts, or tracking.

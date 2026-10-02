@@ -19,7 +19,20 @@ const domGlobals = [
 ].map((name) => ({ name, message: 'src/core is headless: no DOM or browser globals.' }));
 
 export default defineConfig(
-  { ignores: ['dist', 'dev-dist', 'coverage', 'node_modules', 'playwright-report', 'test-results'] },
+  {
+    ignores: [
+      'dist',
+      'dev-dist',
+      'coverage',
+      'node_modules',
+      'playwright-report',
+      'test-results',
+      'screenshots',
+      'emulator/dist',
+      'emulator/.cache',
+      'public/source',
+    ],
+  },
   js.configs.recommended,
   tseslint.configs.recommended,
   {
@@ -33,7 +46,7 @@ export default defineConfig(
     },
   },
   {
-    files: ['src/ui/**/*.{ts,tsx}', 'src/*.{ts,tsx}'],
+    files: ['src/calculator/**/*.{ts,tsx}', 'src/site/**/*.ts'],
     plugins: { 'react-hooks': reactHooks },
     rules: {
       'react-hooks/rules-of-hooks': 'error',
