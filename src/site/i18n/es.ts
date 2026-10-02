@@ -14,7 +14,7 @@ export const es: Strings = {
   about: {
     heading: 'Acerca de {brand}',
     paragraphs: [
-      'Te damos la bienvenida a {brand}, una calculadora gráfica TI-84 Plus CE sin anuncios que funciona en tu navegador. Usa CEmu, un emulador de código abierto, para ejecutar el TI-OS real en un hardware emulado. Tienes las mismas teclas, los mismos menús y los mismos resultados que en la calculadora física, en cualquier dispositivo y sin instalar nada.',
+      '{brand} es una TI-84 Plus CE sin anuncios en tu navegador. CEmu ejecuta el TI-OS real, así que las teclas, los menús y los resultados son los de la calculadora.',
       '{brand} es para estudiantes, docentes y cualquiera que necesite una calculadora gráfica para matemáticas, ciencias, ingeniería o estadística. Tú aportas una sola cosa: un archivo ROM de tu propia calculadora. Lo cargas una vez y {brand} lo recuerda.',
     ],
   },

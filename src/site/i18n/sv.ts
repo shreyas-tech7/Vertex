@@ -14,7 +14,7 @@ export const sv: Strings = {
   about: {
     heading: 'Om {brand}',
     paragraphs: [
-      'Välkommen till {brand}, en reklamfri grafräknare av typen TI-84 Plus CE som körs i din webbläsare. Den använder CEmu, en emulator med öppen källkod, för att köra det riktiga TI-OS på emulerad hårdvara. Du får samma knappar, menyer och resultat som på handenheten, på vilken enhet som helst och utan att installera något.',
+      '{brand} är en reklamfri TI-84 Plus CE i din webbläsare. CEmu kör det riktiga TI-OS, så knappar, menyer och resultat är desamma som på handenheten.',
       '{brand} är till för elever, lärare och alla som behöver en grafräknare till matte, naturvetenskap, teknik eller statistik. Du behöver bara ta med en sak: en ROM-fil från din egen räknare. Du laddar den en gång och {brand} kommer ihåg den.',
     ],
   },

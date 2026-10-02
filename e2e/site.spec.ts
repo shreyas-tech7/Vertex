@@ -95,6 +95,22 @@ test.describe('landing page', () => {
     expect((await archive.body()).byteLength).toBeGreaterThan(1_000_000);
   });
 
+  for (const lang of LANGS) {
+    test(`${lang}: the first About paragraph wraps to two lines at 1920 px`, async ({ page, isMobile }) => {
+      test.skip(isMobile, 'The 1920 px layout is a desktop check');
+      await page.setViewportSize({ width: 1920, height: 855 });
+      const home = pages.find((p) => p.kind === 'home' && p.lang === lang)!;
+      await page.goto(urlOf(home.file));
+      const lines = await page
+        .locator('.content .section p')
+        .first()
+        .evaluate((p) =>
+          Math.round(p.getBoundingClientRect().height / parseFloat(getComputedStyle(p).lineHeight)),
+        );
+      expect(lines).toBeLessThanOrEqual(2);
+    });
+  }
+
   test('"Back to Calculator" scrolls to the top', async ({ page }) => {
     await page.goto('/');
     await page.locator('.cta-button').scrollIntoViewIfNeeded();

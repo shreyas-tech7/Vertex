@@ -151,8 +151,8 @@
       "group": "desktop 1920x855",
       "name": "About heading to Key Features heading",
       "target": 442,
-      "actual": 469.9,
-      "result": "off by 27.9 px"
+      "actual": 443,
+      "result": "off by 1 px"
     },
     {
       "group": "desktop 1920x855",
@@ -221,8 +221,8 @@
       "group": "desktop 1920x855",
       "name": "whole page height",
       "target": 4037,
-      "actual": 4227,
-      "result": "off by 190 px"
+      "actual": 4173,
+      "result": "off by 136 px"
     },
     {
       "group": "phone 390x844",

@@ -487,7 +487,8 @@ body {
   font-size: 5.8px;
   font-weight: 800;
   line-height: 10px;
-  letter-spacing: 0;
+  /* A 2nd legend and an ALPHA legend share one strip. CATALOG and space touched, so each letter is pulled in 0.12 px. */
+  letter-spacing: -0.02em;
   white-space: nowrap;
   pointer-events: none;
 }

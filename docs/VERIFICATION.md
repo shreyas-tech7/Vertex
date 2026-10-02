@@ -3,21 +3,26 @@
 What was run, how to repeat it, and what came out. Nothing here ran a real TI-OS ROM. No ROM was or may be obtained.
 See `docs/STATUS.md` for what that leaves unverified.
 
-| Check                                                    | Result                                                          | Repeat with                                                                   |
-| -------------------------------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Typecheck, lint, 371 unit tests (1 skipped), build, scan | pass                                                            | `npm run check`                                                               |
-| 192 browser tests (Chromium 96, phone 96)                | pass                                                            | `npm run test:e2e`                                                            |
-| Zero requests to any other origin                        | pass                                                            | `node scripts/network-log.mjs`                                                |
-| No ROM, OS image, TI art or TI host anywhere             | pass                                                            | `npm run scan`                                                                |
-| Layout targets at 1920x855 and 390x844                   | 36 of 41 match, 5 do not (listed in F9)                         | `node scripts/measure-targets.mjs`                                            |
-| Computed styles against the reference page               | 24 of 27 pairs identical at both sizes, 3 differ (listed in F1) | `node scripts/compare-reference.mjs`                                          |
-| Firefox and WebKit                                       | **not run in this round** (no binary here, see F5)              | `scripts/browser-check.mjs firefox <binary>`, `... webkit <MiniBrowser>`      |
-| Source archive rebuilds the same WebAssembly             | not re-run (emulator unchanged since the last round)            | unpack `public/source/vertex-emulator-source.tar.gz`, run `emulator/build.sh` |
+| Check                                                    | Result                                                      | Repeat with                                                                   |
+| -------------------------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Typecheck, lint, 389 unit tests (1 skipped), build, scan | pass                                                        | `npm run check`                                                               |
+| 210 browser tests: 201 pass, 9 skipped on purpose        | pass (Chromium 105, phone 96, 9 desktop-only tests skipped) | `npm run test:e2e`                                                            |
+| Zero requests to any other origin                        | pass                                                        | `node scripts/network-log.mjs`                                                |
+| No ROM, OS image, TI art or TI host anywhere             | pass                                                        | `npm run scan`                                                                |
+| Layout targets at 1920x855 and 390x844                   | 36 of 41 match, 5 do not (listed in F9)                     | `node scripts/measure-targets.mjs`                                            |
+| Computed styles against the reference page               | **not run in this round** (reference file missing, see F1)  | `REF_DIR=<MIT repo checkout> node scripts/compare-reference.mjs`              |
+| Firefox and WebKit                                       | **not run** (no binary here, see F5)                        | `scripts/browser-check.mjs firefox <binary>`, `... webkit <MiniBrowser>`      |
+| Source archive rebuilds the same WebAssembly             | not re-run (emulator unchanged since the last round)        | unpack `public/source/vertex-emulator-source.tar.gz`, run `emulator/build.sh` |
 
 Run on 2026-10-02 against the commit that carries this file. The browser was Chromium 1194 from `/opt/pw-browsers`
 (`VERTEX_CHROMIUM_PATH`). Playwright's own headless Chromium hides scrollbars, so no 15 px scrollbar was in play.
 
 ## F1. Screenshots and comparison
+
+**Follow-up round (R2b):** `compare-reference.mjs` was run and stopped at once with `ENOENT ... /home/user/bifdu9898/ti84calculator/index.html`.
+That file is the MIT repo's own page, and this sandbox has no copy. Attaching the repo to the session was refused, so
+nothing was fetched another way. The numbers below are from the last round and were not refreshed. The screenshots were
+refreshed and show the new About copy.
 
 - Vertex at 1920x855 and 390x844: `docs/screenshots/vertex-1920x855.png`, `docs/screenshots/vertex-390x844.png`. Raw numbers:
   `docs/screenshots/measure-targets.json` and `docs/screenshots/compare-reference.json`.
@@ -99,9 +104,11 @@ boots another. Pass.
 
 ## F5. Console errors, every page, three engines
 
-**Round 2 status:** only the Chromium and phone rows were re-run after the redesign (the 192 browser tests fail on any console
-error, page error or off-origin request). The Firefox and WebKit rows below are from the earlier build. No Firefox or WebKit
-binary exists in this sandbox, so they were not repeated and should be run again (`scripts/browser-check.mjs`).
+**Round 2 status (unchanged in the follow-up):** only the Chromium and phone rows were re-run after the redesign (the browser
+tests fail on any console error, page error or off-origin request). The Firefox and WebKit rows below are from the earlier
+build. No Firefox or WebKit binary exists in this sandbox (checked again in the follow-up: no `firefox`, `MiniBrowser`,
+`WebKitWebDriver` or Playwright browser other than Chromium) and the Playwright download is blocked, so they were not
+repeated and should be run again (`scripts/browser-check.mjs`).
 
 | Engine                        | Pages | Console errors | Page errors | CSP violations | Third-party requests |
 | ----------------------------- | ----- | -------------- | ----------- | -------------- | -------------------- |
@@ -149,48 +156,81 @@ or banned phrase. Pass. The translations were written by the agent and have not 
 
 ## F9. Layout targets (built page, Chromium, `node scripts/measure-targets.mjs`)
 
-Desktop 1920x855: 28 of 32 match, 4 do not. Phone 390x844: 8 of 9 match.
+Desktop 1920x855: 28 of 32 match, 4 do not. Phone 390x844: 8 of 9 match. Re-run after the follow-up (R2b). Chromium 1194 on
+Linux. The sandbox renders the body font stack in Liberation Sans (Arial metrics), so line wraps and heights follow that
+font. The same commit measured 4227 for the whole page in the last report and 4200 here before this change, so compare
+numbers only from one machine.
 
-| Target                                    | Wanted                               | Measured           | Result             |
-| ----------------------------------------- | ------------------------------------ | ------------------ | ------------------ |
-| Top bar (no height set)                   | 80                                   | 80                 | match              |
-| Language button width                     | 126                                  | 121.3              | **off by 4.7 px**  |
-| Language button height                    | 39                                   | 39                 | match              |
-| H1 top, height, font                      | 120, 51.2, 32px bold #333            | same               | match              |
-| Notice width, height, top                 | 680, about 70, 171                   | 680, 70.2, 171.2   | match              |
-| Iframe width, height, top                 | 600, 754, about 261                  | 600, 754, 261.3    | match              |
-| Zoom button height                        | 38                                   | 38                 | match              |
-| Case size and position in the frame       | 258x604 at 171,78                    | same               | match              |
-| LCD size and position in the case         | 232x174 at 13,29                     | same               | match              |
-| About heading to Key Features heading     | 442                                  | 469.9              | **off by 27.9 px** |
-| Preview block height                      | 136.6                                | 137.6              | **off by 1 px**    |
-| Preview image box                         | 130x130                              | 130x130            | match              |
-| Feature card width, gap                   | 260, 20                              | 260, 20            | match              |
-| Footer width, background, border, padding | 900, #fafafa, 1px #e0e0e0, 30px 40px | same               | match              |
-| Whole page height                         | 4037                                 | 4227               | **off by 190 px**  |
-| Phone top bar                             | 70                                   | 70                 | match              |
-| Phone H1 top, height (two lines)          | 110, 102.4                           | 110, 102.4         | match              |
-| Phone iframe width                        | 350                                  | 350                | match              |
-| Phone iframe height at 100%               | 700                                  | 754                | **off by 54 px**   |
-| Phone case 258 wide, centred, unclipped   | yes                                  | x 46 to 304 of 350 | match              |
-| Phone horizontal page scroll              | none                                 | none               | match              |
+| Target                                    | Wanted                               | Measured           | Result            |
+| ----------------------------------------- | ------------------------------------ | ------------------ | ----------------- |
+| Top bar (no height set)                   | 80                                   | 80                 | match             |
+| Language button width                     | 126                                  | 121.3              | **off by 4.7 px** |
+| Language button height                    | 39                                   | 39                 | match             |
+| H1 top, height, font                      | 120, 51.2, 32px bold #333            | same               | match             |
+| Notice width, height, top                 | 680, about 70, 171                   | 680, 70.2, 171.2   | match             |
+| Iframe width, height, top                 | 600, 754, about 261                  | 600, 754, 261.3    | match             |
+| Zoom button height                        | 38                                   | 38                 | match             |
+| Case size and position in the frame       | 258x604 at 171,78                    | same               | match             |
+| LCD size and position in the case         | 232x174 at 13,29                     | same               | match             |
+| About heading to Key Features heading     | 442                                  | 443.0 (was 469.9)  | **off by 1.0 px** |
+| Preview block height                      | 136.6                                | 137.6              | **off by 1 px**   |
+| Preview image box                         | 130x130                              | 130x130            | match             |
+| Feature card width, gap                   | 260, 20                              | 260, 20            | match             |
+| Footer width, background, border, padding | 900, #fafafa, 1px #e0e0e0, 30px 40px | same               | match             |
+| Whole page height                         | 4037                                 | 4173 (was 4200)    | **off by 136 px** |
+| Phone top bar                             | 70                                   | 70                 | match             |
+| Phone H1 top, height (two lines)          | 110, 102.4                           | 110, 102.4         | match             |
+| Phone iframe width                        | 350                                  | 350                | match             |
+| Phone iframe height at 100%               | 700                                  | 754                | **off by 54 px**  |
+| Phone case 258 wide, centred, unclipped   | yes                                  | x 46 to 304 of 350 | match             |
+| Phone horizontal page scroll              | none                                 | none               | match             |
 
 Why the five differ (none was padded or tuned to hide it):
 
-- **Language button 121.3 wide.** The button label is Vertex's own text, so its width follows the label. Padding was left at
-  the reference's 8px 16px. Height matches.
-- **About to Key Features 469.9.** Each About paragraph wraps to three lines at 1920 px. With one paragraph at two lines the
-  distance would be about 443. The copy is Vertex's own in nine languages and was not cut to hit the number.
-- **Preview block 137.6.** It compares identical to the repo's `index.html` in `compare-reference.mjs`, so the 1 px is
-  probably line-box rounding from the live site's font metrics. A 1 px text-height gap can be fonts.
-- **Whole page 4227.** The notice card (about 70 px plus margin), the longer About copy (28 px) and the extra footer lines
-  (open source, privacy and terms) add up to the 190 px.
-- **Phone iframe 754.** Target 700 conflicts with the rule that the frame is `calcHeight x zoom + 150`, which is 754 at
-  100%. The formula won (see `docs/DECISIONS.md`). The CSS minimum is 700 and applies at zoom levels below 100%.
+- **Language button 121.3 wide.** The visible text is the page's own language name ("English") with a globe and a caret.
+  "Language" is the accessible name only, so the width follows the language: 121.3 for English, 117.0 Japanese, 120.4 Italian,
+  126.3 Spanish, 127.2 German, 127.8 Russian, 129.7 French and Swedish, 140.7 Portuguese. Padding stays at the reference's
+  8px 16px. Height matches. The live label and width were not seen (the live site was not loaded, see F1).
+- **About to Key Features 443.0, was 469.9.** The first About paragraph is shortened in all nine languages and now wraps to
+  two lines at 1920 px, with the ROM paragraph at three. Every language measures 443.0. Two plus three lines is the closest
+  fit, since a line is 26.9 px. The 1.0 px that is left is the preview block below.
+- **Preview block 137.6.** It is 1 px over the 136.6 target and sits inside the About span, so it is the same 1 px. It
+  compared identical to the repo's `index.html` last round, so it is probably line-box rounding from the live site's font
+  metrics. Not verified against the live page.
+- **Whole page 4173, was 4200 (4227 in the last report).** The About change took out 26.9 px. Hiding blocks one at a time
+  in the built page shows what Vertex-only content costs: the independence notice 90 px (70.2 plus 20 margin), the Open
+  Source footer line 38 px, the Privacy and Terms footer line 38 px. Together 166 px, which is more than the 136 left, so
+  the live page must have height Vertex does not, such as a contact line (Vertex has none). The last report's split
+  (notice, About, footer) is confirmed in size, but the live split could not be checked. None of the three is filler: the
+  notice says Vertex is not affiliated with Texas Instruments, the Open Source line links the source of a GPLv3 emulator
+  build, and privacy and terms stay. Nothing was cut.
+- **Phone iframe 754. This is the owner's choice.** The 700 target conflicts with the rule that the frame is
+  `calcHeight x zoom + 150`, which is 754 at 100%. The owner chose the formula (see `docs/DECISIONS.md`) and it was not
+  changed. The CSS minimum of 700 applies at zoom levels below 100%.
 
 ## F10. Not checked
 
-- Firefox and WebKit after the redesign. The live site compared side by side in a real browser. The 16-item TI-OS checklist
-  and every behaviour of TI-OS itself, because no ROM was or may be obtained.
-- The ROM panel's wording and the artwork were not reviewed by a person. The legends are font dependent, and a slight
-  CATALOG and space touch can occur with other fonts.
+- Firefox and WebKit after the redesign (no binary here). The live site compared side by side in a real browser (it was not
+  loaded: its page embeds TI's emulator). `compare-reference.mjs` against the MIT repo's `index.html` in this round (the file
+  is not in this sandbox). The 16-item TI-OS checklist and every behaviour of TI-OS itself, because no ROM was or may be
+  obtained.
+- The ROM panel's wording, the nine About paragraphs and the artwork were not reviewed by a person. The legends are font
+  dependent (see F11).
+
+## F11. Legends, CATALOG and space (`docs/screenshots/legends-*.png`)
+
+The 2nd legend (left) and the ALPHA legend (right) share one strip above a key. The gap is the distance between the glyph
+boxes of the two legends, in case pixels (the same at every zoom, since the case is scaled as a whole). 37 keys have both.
+
+| Font                        | Zoom | Gap before | Gap after `-0.02em` | Overlap after |
+| --------------------------- | ---- | ---------- | ------------------- | ------------- |
+| Default (Liberation Sans)   | 100% | -0.25 px   | +1.14 px            | none          |
+| Default (Liberation Sans)   | 135% | -0.25 px   | +1.14 px            | none          |
+| FreeSans                    | 100% | +0.09 px   | +1.48 px            | none          |
+| DejaVu Sans (wide fallback) | 100% | -4.36 px   | -2.97 px            | CATALOG/space |
+| DejaVu Sans (wide fallback) | 135% | -4.36 px   | -2.97 px            | CATALOG/space |
+
+Before the change the screenshots (`legends-100-before.png`, `legends-135-before.png`) show G touching s, so the two read as
+one word. In DejaVu Sans the s overprints the G (`legends-100-dejavu-before.png`). After it, `legends-100.png` and
+`legends-135.png` show a visible gap. DejaVu Sans still overlaps by about 3 px (`legends-100-dejavu.png`). A pinned legend
+font or a smaller legend would fix that and was not part of the allowed change. No other pair of the 37 overlaps in any of the four fonts tried.

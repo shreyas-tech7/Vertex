@@ -14,7 +14,7 @@ export const de: Strings = {
   about: {
     heading: 'Über {brand}',
     paragraphs: [
-      'Willkommen bei {brand}, einem werbefreien grafikfähigen TI-84 Plus CE, der in deinem Browser läuft. Er nutzt CEmu, einen Open-Source-Emulator, um das echte TI-OS auf emulierter Hardware auszuführen. Du bekommst dieselben Tasten, Menüs und Ergebnisse wie beim Handgerät, auf jedem Gerät und ohne Installation.',
+      '{brand} ist ein werbefreier TI-84 Plus CE in deinem Browser. CEmu führt das echte TI-OS aus, daher stimmen Tasten, Menüs und Ergebnisse mit dem Handgerät überein.',
       '{brand} ist für Schülerinnen, Schüler, Lehrkräfte und alle, die einen Grafikrechner für Mathe, Naturwissenschaften, Technik oder Statistik brauchen. Du bringst nur eines mit: eine ROM-Datei von deinem eigenen Rechner. Du lädst sie einmal, und {brand} merkt sie sich.',
     ],
   },

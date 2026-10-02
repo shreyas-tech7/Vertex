@@ -14,7 +14,7 @@ export const en: Strings = {
   about: {
     heading: 'About {brand}',
     paragraphs: [
-      'Welcome to {brand}, an ad-free TI-84 Plus CE graphing calculator that runs in your browser. It uses CEmu, an open source emulator, to run the real TI-OS on emulated hardware. You get the same keys, menus, and results as the handheld, on any device, with nothing to install.',
+      '{brand} is an ad-free TI-84 Plus CE calculator in your browser. CEmu runs the real TI-OS, so the keys, menus, and results match the handheld.',
       '{brand} is for students, teachers, and anyone who needs a graphing calculator for math, science, engineering, or statistics. You bring one thing: a ROM file from your own calculator. You load it once and {brand} remembers it.',
     ],
   },

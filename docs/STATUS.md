@@ -6,7 +6,8 @@ Honest state of the project. Anything unfinished, unverified, or different from 
 
 R2 (redesign, round 2) on `ti84-redesign`, draft PR into `main`. Done: service worker takeover, Ad-Free wording in nine
 languages, the new 258 x 604 original artwork with the 232 x 174 LCD, the capped zoom with the reference's height
-formula, the smaller white ROM panel with drop anywhere, the licence notices. **Nothing here has run a real TI-OS ROM**,
+formula, the smaller white ROM panel with drop anywhere, the licence notices. The follow-up (R2b) shortened the first
+About paragraph in all nine languages and loosened the legend spacing. **Nothing here has run a real TI-OS ROM**,
 because no ROM was or may be obtained. See "Not verified" below.
 
 ## Needs the owner (not faked here)
@@ -17,9 +18,25 @@ because no ROM was or may be obtained. See "Not verified" below.
 
 ## Known layout gaps (see `docs/VERIFICATION.md` F9)
 
-- Language button is 121.3 px wide against 126. About to Key Features is 469.9 against 442. Preview block is 1 px taller.
-  The whole page is 4227 against 4037. The phone frame is 754 at 100% against 700 (the +150 formula wins).
-- Firefox and WebKit were not re-run after the redesign.
+Measured in Chromium 1194 at 1920x855 and 390x844 with `node scripts/measure-targets.mjs`. The sandbox renders the body
+stack in Liberation Sans (Arial metrics), so line wraps follow that font.
+
+- **About to Key Features is 443.0 against 442** (was 469.9). The first About paragraph is shortened in all nine languages
+  and wraps to two lines, the ROM paragraph stays at three. The 1.0 px left is the preview block (137.6 against 136.6),
+  which sits inside that span.
+- **Language button is 121.3 px against 126.** The visible text is the page's own language name ("English"), with the
+  globe and a caret. "Language" is the accessible name only. Kept as is, no padding added. The live site was not viewed.
+- **Whole page is 4173 against 4037** (was 4200 here for the same commit, 4227 in the last report: the difference is the
+  font). The remaining 136 px is the independence notice (90 px with its margin) plus the Open Source line (38) and the
+  Privacy and Terms line (38), less whatever the live page has that Vertex does not. None of these is filler, so none
+  was cut.
+- **Phone frame is 754 at 100% against 700. This is the owner's choice.** The frame height stays `calcHeight x zoom + 150`
+  (754 at 100%). The CSS minimum of 700 still applies below 100%. The formula was not changed.
+- **Legends:** CATALOG and space touched in the default font. A letter-spacing of `-0.02em` now leaves a gap of about
+  1.1 px at 100% and 135%. In DejaVu Sans, a wide fallback font, the pair still overlaps by about 3 px.
+- **Firefox and WebKit were not re-run.** No binary exists in this sandbox and the Playwright download is blocked.
+- **`compare-reference.mjs` could not run.** It needs a local copy of the MIT reference repo's `index.html`, which is
+  not in this sandbox. The F1 numbers are from the last round.
 
 ## Not verified (needs a real ROM from the owner's own calculator)
 
