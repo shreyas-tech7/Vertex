@@ -7,3 +7,7 @@ test-results
 package-lock.json
 docs/SPEC.md
 public/*.png
+emulator/dist
+emulator/CEMU-LICENSE.txt
+emulator/LICENSE
+public/source

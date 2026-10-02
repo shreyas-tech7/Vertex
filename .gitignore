@@ -12,3 +12,12 @@ test-results
 !.env.example
 *.tsbuildinfo
 screenshots
+
+# Calculator ROMs and OS images must never be committed (visitors supply their own).
+*.rom
+*.8eu
+*.8ek
+*.h84statej
+# Emulator build cache (CEmu checkout, emsdk)
+emulator/.cache
+!emulator/dist
