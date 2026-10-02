@@ -21,3 +21,4 @@ screenshots
 # Emulator build cache (CEmu checkout, emsdk)
 emulator/.cache
 !emulator/dist
+!docs/screenshots
