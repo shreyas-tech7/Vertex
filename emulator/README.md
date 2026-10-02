@@ -19,7 +19,9 @@ the **GNU General Public License, version 3 or later**. The full text is in [`LI
 | `dist/`                | The built `vertex-cemu.js` and `vertex-cemu.wasm`, plus `MANIFEST.json` with checksums.                           |
 
 The corresponding source is served with the site at `source/vertex-emulator-source.tar.gz`. It contains the CEmu tree at
-the pinned commit, the adapter, this build script and both licenses. Running `build.sh` regenerates it.
+the pinned commit (`CEmu/`), and `emulator/` with the adapter, this build script and both licenses, laid out as in the
+repository. Unpack it and run `emulator/build.sh` to rebuild the same `vertex-cemu.wasm` (it needs `emcc`, or network access
+to install emsdk). Running `build.sh` in the repository regenerates the archive.
 
 ## Build
 

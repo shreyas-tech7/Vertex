@@ -84,6 +84,11 @@ export function CalculatorApp() {
               dragging={calculator.dragging}
               toast={calculator.toast}
             >
+              {calculator.phase === 'failed' && !showPanel && (
+                <div className="screen-loading screen-failed" role="alert">
+                  <span>{calculator.error ? strings.errors[calculator.error] : ''}</span>
+                </div>
+              )}
               {showPanel && (
                 <RomPanel
                   strings={strings}

@@ -184,6 +184,12 @@ body {
   font-size: 13px;
 }
 
+.screen-failed {
+  padding: 20px;
+  color: #b00020;
+  text-align: center;
+}
+
 .spinner {
   width: 24px;
   height: 24px;

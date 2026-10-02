@@ -22,6 +22,12 @@ DIST="$HERE/dist"
 mkdir -p "$CACHE" "$DIST"
 
 # 1. CEmu at the pinned commit ----------------------------------------------------------------------------------
+# When this script runs from the source archive, CEmu sits next to it (CEmu/) and there is no git repository.
+FROM_ARCHIVE=0
+if [ -z "${CEMU_DIR:-}" ] && [ -f "$ROOT/CEmu/core/emu.c" ] && [ ! -d "$ROOT/.git" ]; then
+  CEMU_DIR="$ROOT/CEmu"
+  FROM_ARCHIVE=1
+fi
 if [ -z "${CEMU_DIR:-}" ]; then
   CEMU_DIR="$CACHE/CEmu"
   if [ ! -d "$CEMU_DIR/.git" ]; then
@@ -33,10 +39,12 @@ if [ -z "${CEMU_DIR:-}" ]; then
     git -C "$CEMU_DIR" checkout -q --detach FETCH_HEAD
   fi
 fi
-ACTUAL="$(git -C "$CEMU_DIR" rev-parse HEAD)"
-if [ "$ACTUAL" != "$COMMIT" ]; then
-  echo "CEmu is at $ACTUAL but emulator/CEMU_COMMIT pins $COMMIT" >&2
-  exit 1
+if [ "$FROM_ARCHIVE" = 0 ]; then
+  ACTUAL="$(git -C "$CEMU_DIR" rev-parse HEAD)"
+  if [ "$ACTUAL" != "$COMMIT" ]; then
+    echo "CEmu is at $ACTUAL but emulator/CEMU_COMMIT pins $COMMIT" >&2
+    exit 1
+  fi
 fi
 
 # 2. Emscripten --------------------------------------------------------------------------------------------------
@@ -65,11 +73,11 @@ done
 
 emcc "$HERE/src/vertex_adapter.c" "${SOURCES[@]}" \
   -I"$CORE" \
-  -O3 -flto -W -Wall -Wno-unused-parameter -Wno-sign-compare -Wno-unused-but-set-variable \
+  -O3 -flto -DNDEBUG -W -Wall -Wno-unused-parameter -Wno-sign-compare -Wno-unused-but-set-variable \
   -o "$DIST/vertex-cemu.js" \
   -sMODULARIZE=1 -sEXPORT_ES6=1 -sEXPORT_NAME=createVertexCemu \
   -sENVIRONMENT=web,worker,node \
-  -sINITIAL_MEMORY=33554432 -sALLOW_MEMORY_GROWTH=1 \
+  -sINITIAL_MEMORY=33554432 -sALLOW_MEMORY_GROWTH=1 -sSTACK_SIZE=524288 \
   -sFILESYSTEM=1 -sINVOKE_RUN=0 -sNO_EXIT_RUNTIME=1 --no-entry \
   -sDYNAMIC_EXECUTION=0 -sASSERTIONS=0 \
   -sEXPORTED_RUNTIME_METHODS=FS,HEAPU8,HEAPU32,UTF8ToString,stringToUTF8,lengthBytesUTF8 \
@@ -89,15 +97,21 @@ cat > "$DIST/MANIFEST.json" <<EOF
 EOF
 
 # 5. Corresponding-source archive -----------------------------------------------------------------------------------
+# Same layout as the repository (emulator/ and CEmu/ side by side), so build.sh runs unchanged from the archive.
 # Deterministic: sorted names, fixed owner, the CEmu commit time as the mtime, gzip without a name or timestamp.
+if [ "$FROM_ARCHIVE" = 1 ]; then
+  echo "built from the source archive: $(sha "$DIST/vertex-cemu.wasm")"
+  exit 0
+fi
 OUT="$ROOT/public/source"
 mkdir -p "$OUT"
 STAGE="$(mktemp -d)"
 trap 'rm -rf "$STAGE"' EXIT
 TOP="vertex-emulator-source"
-mkdir -p "$STAGE/$TOP/CEmu"
+mkdir -p "$STAGE/$TOP/CEmu" "$STAGE/$TOP/emulator/src"
 git -C "$CEMU_DIR" archive --format=tar "$COMMIT" | tar -x -C "$STAGE/$TOP/CEmu"
-cp "$HERE/src/vertex_adapter.c" "$HERE/build.sh" "$HERE/CEMU_COMMIT" "$HERE/LICENSE" "$HERE/CEMU-LICENSE.txt" "$HERE/README.md" "$STAGE/$TOP/"
+cp "$HERE/src/vertex_adapter.c" "$STAGE/$TOP/emulator/src/"
+cp "$HERE/build.sh" "$HERE/CEMU_COMMIT" "$HERE/LICENSE" "$HERE/CEMU-LICENSE.txt" "$HERE/README.md" "$STAGE/$TOP/emulator/"
 MTIME="$(git -C "$CEMU_DIR" show -s --format=%ct "$COMMIT")"
 tar --sort=name --owner=0 --group=0 --numeric-owner --mtime="@$MTIME" -C "$STAGE" -cf - "$TOP" | gzip -9n > "$OUT/vertex-emulator-source.tar.gz"
 echo "archive sha256 $(sha "$OUT/vertex-emulator-source.tar.gz")"

@@ -70,3 +70,21 @@ export async function keyPoint(key: Locator): Promise<{ x: number; y: number }> 
   const [fx, fy] = aim[id!] ?? [0.5, 0.5];
   return { x: box.x + box.width * fx, y: box.y + box.height * fy };
 }
+
+/**
+ * Records every value the emulated keypad reports, in order. A tap on 2nd or ALPHA is held for about 50 ms, which a
+ * polling assertion can miss on a busy machine. The recorder cannot.
+ */
+export async function recordMatrix(page: Page): Promise<() => string[]> {
+  const seen: string[] = [];
+  await page.exposeFunction('recordMatrix', (value: string) => void seen.push(value));
+  await page.evaluate(() => {
+    const keypad = document.querySelector('.keypad')!;
+    const report = () =>
+      (window as unknown as { recordMatrix(v: string): void }).recordMatrix(
+        keypad.getAttribute('data-matrix')!,
+      );
+    new MutationObserver(report).observe(keypad, { attributes: true, attributeFilter: ['data-matrix'] });
+  });
+  return () => [...seen];
+}

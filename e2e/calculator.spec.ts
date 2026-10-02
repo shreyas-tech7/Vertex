@@ -10,6 +10,7 @@ import {
   loadSyntheticRom,
   matrixOnly,
   openCalculator,
+  recordMatrix,
   syntheticRomBuffer,
   test,
 } from './support.ts';
@@ -165,6 +166,40 @@ test.describe('ROM panel', () => {
   });
 });
 
+test.describe('loading state', () => {
+  test('shows a loading state in the screen area while the WebAssembly downloads', async ({
+    page,
+    context,
+  }) => {
+    await openCalculator(page);
+    await loadSyntheticRom(page);
+    await context.route('**/*.wasm', async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 2500));
+      await route.continue();
+    });
+    await page.reload();
+    const loading = page.locator('.screen-loading');
+    await expect(loading).toBeVisible();
+    await expect(loading).toContainText('Loading the emulator');
+    await expect(page.locator('.rom-panel')).toHaveCount(0);
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running', { timeout: 15_000 });
+    await expect(loading).toHaveCount(0);
+  });
+});
+
+test.describe('emulator failure', () => {
+  test('says so plainly when the emulator cannot load', async ({ page, context, problems }) => {
+    await openCalculator(page);
+    await loadSyntheticRom(page);
+    await context.route('**/*.wasm', (route) => route.abort());
+    await page.reload();
+    await expect(page.locator('.screen-failed')).toHaveText(
+      'The emulator could not start. Reload the page and try again.',
+    );
+    problems.length = 0; // the failed download is the point of this test
+  });
+});
+
 test.describe('program transfer', () => {
   test('a variable file dropped on the calculator is sent', async ({ page }) => {
     await openCalculator(page);
@@ -264,40 +299,31 @@ test.describe('input', () => {
   test('Shift taps 2nd, Alt taps ALPHA, and Shift+9 types a parenthesis', async ({ page }) => {
     await openCalculator(page);
     await loadSyntheticRom(page);
+    const history = await recordMatrix(page);
     await page.keyboard.press('Shift');
-    await expectMatrix(page, matrixOnly(1, 5));
-    await expectMatrix(page, MATRIX_EMPTY);
+    await expect.poll(() => history()).toEqual([matrixOnly(1, 5), MATRIX_EMPTY]);
     await page.keyboard.press('Alt');
-    await expectMatrix(page, matrixOnly(2, 7));
-    await expectMatrix(page, MATRIX_EMPTY);
+    await expect
+      .poll(() => history())
+      .toEqual([matrixOnly(1, 5), MATRIX_EMPTY, matrixOnly(2, 7), MATRIX_EMPTY]);
     await page.keyboard.down('Shift');
     await page.keyboard.down('(');
     await expectMatrix(page, matrixOnly(4, 4));
     await page.keyboard.up('(');
     await page.keyboard.up('Shift');
     await expectMatrix(page, MATRIX_EMPTY);
+    // Shift was a modifier here, so 2nd never went down: the only new states are the parenthesis and the release.
+    expect(history().slice(4)).toEqual([matrixOnly(4, 4), MATRIX_EMPTY]);
   });
 
   test('V sends 2nd then x squared', async ({ page }) => {
     await openCalculator(page);
     await loadSyntheticRom(page);
-    const seen: string[] = [];
-    await page.exposeFunction('record', (value: string) => seen.push(value));
-    await page.evaluate(() => {
-      const keypad = document.querySelector('.keypad')!;
-      new MutationObserver(() =>
-        (window as unknown as { record(v: string): void }).record(keypad.getAttribute('data-matrix')!),
-      ).observe(keypad, {
-        attributes: true,
-        attributeFilter: ['data-matrix'],
-      });
-    });
+    const history = await recordMatrix(page);
     await page.keyboard.press('v');
-    await expect.poll(() => seen.length).toBeGreaterThanOrEqual(4);
-    const states = seen.filter((value) => value !== MATRIX_EMPTY);
-    expect(states[0]).toBe(matrixOnly(1, 5));
-    expect(states[states.length - 1]).toBe(matrixOnly(2, 4));
-    expect(states.every((s) => s === matrixOnly(1, 5) || s === matrixOnly(2, 4))).toBe(true);
+    await expect.poll(() => history().length).toBeGreaterThanOrEqual(4);
+    // 2nd goes down and up, then x squared goes down and up, and the two are never down together.
+    expect(history()).toEqual([matrixOnly(1, 5), MATRIX_EMPTY, matrixOnly(2, 4), MATRIX_EMPTY]);
   });
 
   test('the keyboard is left alone while the ROM panel is open', async ({ page }) => {

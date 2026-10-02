@@ -14,7 +14,7 @@ src/site/           the static pages
   landing.ts             iframe height messages (origin and source checked), CTA scroll, menu behaviour
   csp.ts, support.ts     the Content Security Policy, header files, robots.txt, sitemap.xml
 src/calculator/     the calculator page (React): calculator.html
-  emulator/              protocol, worker, client, EmulatorCore, KeyScheduler
+  emulator/              protocol, worker (thin), runner (60 fps loop, testable), client, EmulatorCore, KeyScheduler
   useCalculator.ts       storage, boot, pause, saving, drag and drop
   Keypad.tsx, keypadLayout.ts   the original keypad: 50 keys, legends, arrow pad
   keyboard.ts, keyHolders.ts    physical keyboard and pointer input, shared key ownership

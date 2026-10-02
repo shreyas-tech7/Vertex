@@ -102,6 +102,8 @@ const pairs = [
   ['footer line', 'footer p', 'footer p'],
 ];
 
+const HEIGHT_COMPARED = new Set(['top bar', 'site name', 'H1', 'CTA button', 'preview frame']);
+
 async function measure(page, selector) {
   return page.evaluate(
     ([sel, props]) => {
@@ -168,7 +170,9 @@ for (const [label, viewport] of [
     const differences = [];
     for (const p of properties)
       if (a.styles[p] !== b.styles[p]) differences.push(`${p}: ${a.styles[p]} -> ${b.styles[p]}`);
-    for (const p of ['x', 'width'])
+    // Heights only where the text cannot change them: one-line elements and boxes with fixed sizes.
+    const compared = HEIGHT_COMPARED.has(pairName) ? ['x', 'width', 'height'] : ['x', 'width'];
+    for (const p of compared)
       if (Math.abs(a.box[p] - b.box[p]) > 0.6) differences.push(`box.${p}: ${a.box[p]} -> ${b.box[p]}`);
     rows.push({ element: pairName, status: differences.length ? 'differs' : 'identical', differences });
   }
