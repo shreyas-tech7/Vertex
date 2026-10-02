@@ -22,8 +22,13 @@ const forbiddenExtensions = new Set(['.rom', '.8eu', '.8ek', ['.h84', 'statej'].
 const artName =
   /(faceplate|ti-?84-?(plus-?)?ce-?(touch|photo|render)|texas-?instruments.*\.(png|jpe?g|svg|webp)|\bti-?logo)/i;
 
-/** Files that state the rules on purpose: tests that assert the hosts never appear, and .gitignore, which blocks the types. */
-const ALLOWED_TO_NAME_PATTERNS = new Set(['src/site/pages.test.ts', 'e2e/site.spec.ts', '.gitignore']);
+/** Files that state the rules on purpose: tests that assert the hosts never appear, .gitignore, which blocks the types, and the doc that pastes this output. */
+const ALLOWED_TO_NAME_PATTERNS = new Set([
+  'src/site/pages.test.ts',
+  'e2e/site.spec.ts',
+  '.gitignore',
+  'docs/VERIFICATION.md', // pastes this scan's own output
+]);
 
 const hits = [];
 const note = (where, what) => hits.push(`${where}: ${what}`);

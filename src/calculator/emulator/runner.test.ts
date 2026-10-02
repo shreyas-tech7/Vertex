@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildSyntheticRom } from '../../test-support/syntheticRom.ts';
+import { buildProgramFile, buildSyntheticRom } from '../../test-support/syntheticRom.ts';
 import { EmulatorCore, type CemuFactory } from './core.ts';
 import type { FromWorker } from './protocol.ts';
 import { FRAME_MS, EmulatorRunner, type RunnerHost } from './runner.ts';
@@ -126,6 +126,22 @@ describe('emulator runner (real CEmu build, fake clock)', () => {
     const runner = new EmulatorRunner(fake.host, () => EmulatorCore.create(create as CemuFactory));
     runner.handle({ type: 'send', id: 3, name: 'A.8xp', data: new ArrayBuffer(4) });
     expect(fake.messages).toContainEqual({ type: 'sent', id: 3, ok: false, reason: 'notRunning' });
+  });
+
+  it('answers a file transfer with a definite result, even with no OS to receive it', async () => {
+    // The synthetic ROM runs no code, so the emulated calculator never answers the USB host. The runner must still
+    // give up cleanly (not hang), keep running frames while it waits, and report failure rather than success.
+    const { runner, advance, messages } = await bootedRunner();
+    advance(50);
+    const file = buildProgramFile('HELLO');
+    runner.handle({ type: 'send', id: 9, name: 'HELLO.8xp', data: file.buffer as ArrayBuffer });
+    const before = runner.framesRun;
+    advance(35_000, 16);
+    expect(runner.framesRun - before).toBeGreaterThan(1000);
+    const sent = messages.find((m) => m.type === 'sent') as Extract<FromWorker, { type: 'sent' }>;
+    expect(sent).toBeDefined();
+    expect(sent.id).toBe(9);
+    expect(sent.ok).toBe(false);
   });
 
   it('keeps the frame step at 1/60 s', () => {

@@ -5,7 +5,7 @@ See `docs/STATUS.md` for what that leaves unverified.
 
 | Check                                                                        | Result                                                | Repeat with                                                                   |
 | ---------------------------------------------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Typecheck, lint, 344 unit tests, build, scan                                 | pass                                                  | `npm run check`                                                               |
+| Typecheck, lint, 345 unit tests, build, scan                                 | pass                                                  | `npm run check`                                                               |
 | 144 browser tests (Chromium 72, phone 72)                                    | pass                                                  | `npm run test:e2e`                                                            |
 | 29 checks in Firefox 157 (28 pages and the emulator)                         | pass                                                  | `scripts/browser-check.mjs firefox <binary>`                                  |
 | 30 checks in WebKitGTK 2.52.6 (28 pages, the emulator, a recorder self-test) | pass                                                  | `scripts/browser-check.mjs webkit <MiniBrowser>`                              |
@@ -111,7 +111,7 @@ Every Playwright test also fails on any request outside the base origin. The CSP
 ## F7. Forbidden content
 
 ```
-scanned 129 repository files, 50 build files, 400 archive entries
+scanned 131 repository files, 50 build files, 400 archive entries
 checked for: ROM and OS files (.rom .8eu .8ek .h84statej .8xu .8cu), ROM-shaped binaries, TI artwork names, and references to the proprietary emulator hosts
 clean: no ROM files, no OS images, no TI art, no references to TI or Pearson emulator hosts
 ```

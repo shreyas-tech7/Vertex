@@ -32,3 +32,35 @@ export function buildSyntheticRom(): Uint8Array {
   rom.fill(0, 0x20000 + header.length + inner.length, 0x20000 + header.length + length);
   return rom;
 }
+
+/** A tiny, well-formed TI program file (.8xp) with the given name and body, for transfer tests. */
+export function buildProgramFile(name: string, body: number[] = [0x3f]): Uint8Array {
+  const data = [body.length & 0xff, body.length >> 8, ...body];
+  const nameBytes = Array.from({ length: 8 }, (_, i) => (i < name.length ? name.charCodeAt(i) : 0));
+  const entry = [
+    0x0d,
+    0x00,
+    data.length & 0xff,
+    data.length >> 8,
+    0x05,
+    ...nameBytes,
+    0x00,
+    0x00,
+    data.length & 0xff,
+    data.length >> 8,
+    ...data,
+  ];
+  const signature = Array.from('**TI83F*').map((c) => c.charCodeAt(0));
+  const header = [
+    ...signature,
+    0x1a,
+    0x0a,
+    0x00,
+    ...new Array(42).fill(0x20),
+    entry.length & 0xff,
+    entry.length >> 8,
+  ];
+  let checksum = 0;
+  for (const byte of entry) checksum = (checksum + byte) & 0xffff;
+  return Uint8Array.from([...header, ...entry, checksum & 0xff, checksum >> 8]);
+}

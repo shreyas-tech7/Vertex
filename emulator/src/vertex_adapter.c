@@ -182,11 +182,15 @@ EMSCRIPTEN_KEEPALIVE void vertex_shutdown(void) {
 static int transfer_state; /* 0 idle, 1 sending, 2 finished, -1 failed to start */
 static int transfer_value, transfer_total;
 
+/* CEmu reports (value, total) while it sends. When the transfer ends it calls once more: (1, 1) if it worked,
+ * (0, 0) if it failed (core/usb/dusb.c, USB_DESTROY_EVENT). */
 static bool transfer_progress(void *context, int value, int total) {
     (void)context;
     transfer_value = value;
     transfer_total = total;
-    if (total > 0 && value >= total) {
+    if (value == 0 && total == 0) {
+        transfer_state = -1;
+    } else if (total > 0 && value >= total && transfer_state == 1) {
         transfer_state = 2;
     }
     return false; /* false means keep going */
