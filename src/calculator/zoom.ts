@@ -1,3 +1,5 @@
+// Zoom controls adapted from github.com/bifdu9898/TI84Calculator (MIT), see THIRD_PARTY_NOTICES.md.
+
 /** Zoom for the calculator page: 50% to 200% in 10% steps, remembered in localStorage. */
 export const ZOOM_STORAGE_KEY = 'vertex_zoom_level';
 export const ZOOM_MIN = 0.5;
@@ -15,6 +17,34 @@ export function clampZoom(value: number): number {
 
 export function stepZoom(value: number, direction: 1 | -1): number {
   return clampZoom(value + direction * ZOOM_STEP);
+}
+
+/** Smallest scale a frame can force. A frame narrower than half the case is clipped, nothing can help that. */
+const CAP_FLOOR = 0.1;
+
+/**
+ * The largest zoom, in whole percent, at which the case still fits a frame of this width. On a desktop frame (600 px)
+ * it is above the 200% limit and does nothing. On a phone the frame is the viewport minus 40 px, so 200% is capped.
+ */
+export function zoomCap(frameWidth: number, bodyWidth: number): number {
+  if (!Number.isFinite(frameWidth) || frameWidth <= 0) return ZOOM_MAX;
+  return Math.min(ZOOM_MAX, Math.max(CAP_FLOOR, Math.floor((frameWidth / bodyWidth) * 100) / 100));
+}
+
+/** The zoom actually applied: what the visitor asked for, held at the cap. */
+export function effectiveZoom(requested: number, frameWidth: number, bodyWidth: number): number {
+  return tidy(Math.min(clampZoom(requested), zoomCap(frameWidth, bodyWidth)));
+}
+
+/**
+ * One press of plus or minus, taken from the zoom the visitor sees. When the shown zoom is a cap (108%, say) and not a
+ * multiple of 10, minus goes to the 10% step below it (100%) rather than to 98%.
+ */
+export function stepFromShown(shown: number, direction: 1 | -1): number {
+  const percent = Math.round(shown * 100);
+  const offset = percent % 10;
+  const next = direction === 1 ? percent + (10 - offset) : percent - (offset === 0 ? 10 : offset);
+  return clampZoom(next / 100);
 }
 
 export const zoomLabel = (value: number): string => `${Math.round(value * 100)}%`;
@@ -46,6 +76,12 @@ export interface HeightMessage {
   type: 'updateHeight';
   height: number;
 }
+
+/** Zoom controls (78 px) plus the Change ROM line and notice under the case (72 px), as the reference's fixed +150. */
+export const FRAME_OVERHEAD = 150;
+
+/** The iframe height the parent should use: the case at this zoom plus the controls and the lines below it. */
+export const frameHeight = (bodyHeight: number, zoom: number): number => Math.ceil(bodyHeight * zoom + FRAME_OVERHEAD);
 
 /**
  * Posts the new height to the parent page. The message goes to this page's own origin only, never to `*`.

@@ -2,11 +2,11 @@ import type { Strings } from './types.ts';
 
 export const de: Strings = {
   htmlLang: 'de',
-  title: '{brand}: Kostenloser TI-84-Taschenrechner online',
+  title: '{brand}: Werbefreier TI-84-Taschenrechner online',
   description:
-    'Nutze einen kostenlosen TI-84 Plus CE im Browser. {brand} führt das echte TI-OS auf dem Emulator CEmu aus, mit einer ROM von deinem eigenen Rechner.',
+    'Nutze einen werbefreien TI-84 Plus CE im Browser. {brand} führt das echte TI-OS auf dem Emulator CEmu aus, mit einer ROM von deinem eigenen Rechner.',
   languageLabel: 'Sprache',
-  h1: 'Kostenloser TI-84-Taschenrechner online',
+  h1: 'Werbefreier TI-84-Taschenrechner online',
   noticeLead: 'Unabhängige Website.',
   noticeBody:
     '{brand} steht in keiner Verbindung zu Texas Instruments. Die Seite führt den TI-84 Plus CE auf einem Open-Source-Emulator aus.',
@@ -14,7 +14,7 @@ export const de: Strings = {
   about: {
     heading: 'Über {brand}',
     paragraphs: [
-      'Willkommen bei {brand}, einem kostenlosen grafikfähigen TI-84 Plus CE, der in deinem Browser läuft. Er nutzt CEmu, einen Open-Source-Emulator, um das echte TI-OS auf emulierter Hardware auszuführen. Du bekommst dieselben Tasten, Menüs und Ergebnisse wie beim Handgerät, auf jedem Gerät und ohne Installation.',
+      '{brand} ist ein werbefreier TI-84 Plus CE in deinem Browser. CEmu führt das echte TI-OS aus, daher stimmen Tasten, Menüs und Ergebnisse mit dem Handgerät überein.',
       '{brand} ist für Schülerinnen, Schüler, Lehrkräfte und alle, die einen Grafikrechner für Mathe, Naturwissenschaften, Technik oder Statistik brauchen. Du bringst nur eines mit: eine ROM-Datei von deinem eigenen Rechner. Du lädst sie einmal, und {brand} merkt sie sich.',
     ],
   },
@@ -200,7 +200,7 @@ export const de: Strings = {
       {
         heading: '{brand} nutzen',
         paragraphs: [
-          '{brand} ist kostenlos für private, schulische und berufliche Zwecke. Nutze es nicht, um anderen zu schaden oder gegen Gesetze zu verstoßen.',
+          '{brand} ist werbefrei. Du kannst es für private, schulische und berufliche Zwecke nutzen. Nutze es nicht, um anderen zu schaden oder gegen Gesetze zu verstoßen.',
         ],
       },
       {

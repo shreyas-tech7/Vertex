@@ -1,7 +1,7 @@
 # CLAUDE.md — notes for future agent sessions
 
 **Read `docs/ARCHITECTURE.md`, `docs/DECISIONS.md` (entries tagged R1), `docs/STATUS.md` and `docs/PLAN.md` first.**
-Vertex is a free TI-84 Plus CE calculator for the browser. It runs CEmu (GPLv3) compiled to WebAssembly with a ROM from the
+Vertex is an ad-free TI-84 Plus CE calculator for the browser. It runs CEmu (GPLv3) compiled to WebAssembly with a ROM from the
 visitor's own calculator. `docs/SPEC.md` describes the older from-scratch engine plan, which was replaced by this design.
 
 ## Commands

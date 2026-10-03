@@ -1,3 +1,4 @@
+// The iframe height listener is adapted from github.com/bifdu9898/TI84Calculator (MIT), see THIRD_PARTY_NOTICES.md.
 import { acceptHeightMessage } from '../calculator/zoom.ts';
 import { registerServiceWorker } from './serviceWorker.ts';
 

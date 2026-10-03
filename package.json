@@ -2,7 +2,7 @@
   "name": "vertex-calculator",
   "version": "0.1.0",
   "private": true,
-  "description": "Vertex, a free TI-84 Plus CE calculator for the browser. Runs the real TI-OS on CEmu (WebAssembly) with a ROM from the visitor's own calculator.",
+  "description": "Vertex, an ad-free TI-84 Plus CE calculator for the browser. Runs the real TI-OS on CEmu (WebAssembly) with a ROM from the visitor's own calculator.",
   "license": "MIT",
   "type": "module",
   "engines": {

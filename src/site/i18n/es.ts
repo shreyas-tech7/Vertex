@@ -2,11 +2,11 @@ import type { Strings } from './types.ts';
 
 export const es: Strings = {
   htmlLang: 'es',
-  title: '{brand}: calculadora TI-84 gratis en línea',
+  title: '{brand}: calculadora TI-84 sin anuncios en línea',
   description:
-    'Usa una calculadora TI-84 Plus CE gratis en tu navegador. {brand} ejecuta el TI-OS real en el emulador CEmu, con una ROM de tu propia calculadora.',
+    'Usa una calculadora TI-84 Plus CE sin anuncios en tu navegador. {brand} ejecuta el TI-OS real en el emulador CEmu, con una ROM de tu propia calculadora.',
   languageLabel: 'Idioma',
-  h1: 'Calculadora TI-84 gratis en línea',
+  h1: 'Calculadora TI-84 sin anuncios en línea',
   noticeLead: 'Sitio web independiente.',
   noticeBody:
     '{brand} no está afiliado a Texas Instruments. Ejecuta la TI-84 Plus CE en un emulador de código abierto.',
@@ -14,7 +14,7 @@ export const es: Strings = {
   about: {
     heading: 'Acerca de {brand}',
     paragraphs: [
-      'Te damos la bienvenida a {brand}, una calculadora gráfica TI-84 Plus CE gratuita que funciona en tu navegador. Usa CEmu, un emulador de código abierto, para ejecutar el TI-OS real en un hardware emulado. Tienes las mismas teclas, los mismos menús y los mismos resultados que en la calculadora física, en cualquier dispositivo y sin instalar nada.',
+      '{brand} es una TI-84 Plus CE sin anuncios en tu navegador. CEmu ejecuta el TI-OS real, así que las teclas, los menús y los resultados son los de la calculadora.',
       '{brand} es para estudiantes, docentes y cualquiera que necesite una calculadora gráfica para matemáticas, ciencias, ingeniería o estadística. Tú aportas una sola cosa: un archivo ROM de tu propia calculadora. Lo cargas una vez y {brand} lo recuerda.',
     ],
   },
@@ -199,7 +199,7 @@ export const es: Strings = {
       {
         heading: 'Usar {brand}',
         paragraphs: [
-          '{brand} es gratuito para uso personal, escolar y laboral. No lo uses para hacer daño a otras personas ni para infringir la ley.',
+          '{brand} no tiene anuncios. Puedes usarlo para fines personales, escolares y laborales. No lo uses para hacer daño a otras personas ni para infringir la ley.',
         ],
       },
       {

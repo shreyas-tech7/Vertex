@@ -1,0 +1,320 @@
+{
+  "desktop 1920x855": {
+    "documentHeight": {
+      "reference": 4065,
+      "vertex": 4227
+    },
+    "blockedForeignRequests": {
+      "reference": [],
+      "vertex": []
+    },
+    "rows": [
+      {
+        "element": "body",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "top bar",
+        "status": "differs",
+        "differences": [
+          "display: block -> flex",
+          "gap: normal -> 16px",
+          "box.height: 74.3 -> 80"
+        ]
+      },
+      {
+        "element": "site name",
+        "status": "differs",
+        "differences": [
+          "display: inline -> block",
+          "minHeight: 0px -> auto",
+          "box.width: 160.1 -> 65.7",
+          "box.height: 25 -> 33.3"
+        ]
+      },
+      {
+        "element": "calculator band",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "band wrapper",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "H1",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "iframe",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "container",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "content",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "About heading",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "About paragraph",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "preview frame",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "preview image",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "features grid",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "feature card",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "feature card title",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "feature card text",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "usage steps",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "usage step",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "perfect-for box",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "perfect-for line",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "list",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "CTA section",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "CTA button",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "footer",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "footer link",
+        "status": "differs",
+        "differences": [
+          "box.x: 949.8 -> 882.4",
+          "box.width: 56.5 -> 40.7"
+        ]
+      },
+      {
+        "element": "footer line",
+        "status": "identical",
+        "differences": []
+      }
+    ]
+  },
+  "phone 390x844": {
+    "documentHeight": {
+      "reference": 5358,
+      "vertex": 5867
+    },
+    "blockedForeignRequests": {
+      "reference": [],
+      "vertex": []
+    },
+    "rows": [
+      {
+        "element": "body",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "top bar",
+        "status": "differs",
+        "differences": [
+          "display: block -> flex",
+          "gap: normal -> 16px",
+          "box.height: 59.1 -> 70"
+        ]
+      },
+      {
+        "element": "site name",
+        "status": "differs",
+        "differences": [
+          "display: inline -> block",
+          "minHeight: 0px -> auto",
+          "box.width: 135.5 -> 55.6",
+          "box.height: 21 -> 28.1"
+        ]
+      },
+      {
+        "element": "calculator band",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "band wrapper",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "H1",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "iframe",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "container",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "content",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "About heading",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "About paragraph",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "preview frame",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "preview image",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "features grid",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "feature card",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "feature card title",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "feature card text",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "usage steps",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "usage step",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "perfect-for box",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "perfect-for line",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "list",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "CTA section",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "CTA button",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "footer",
+        "status": "identical",
+        "differences": []
+      },
+      {
+        "element": "footer link",
+        "status": "differs",
+        "differences": [
+          "box.x: 47 -> 136.5",
+          "box.width: 56.5 -> 40.7"
+        ]
+      },
+      {
+        "element": "footer line",
+        "status": "identical",
+        "differences": []
+      }
+    ]
+  }
+}

@@ -20,8 +20,42 @@ CEmu copyright: (C) 2015-2019 CEmu contributors and later years. The adapter `em
 | [bifdu9898/TI84Calculator](https://github.com/bifdu9898/TI84Calculator) | MIT     | The page layout and CSS of the landing page and the calculator page shell (zoom controls, iframe sizing and height messages). `src/site/site.css` and `src/calculator/calculator.css` follow it. Its emulator wiring is not used.  |
 | [hunterchen7/ti84ce](https://github.com/hunterchen7/ti84ce)             | MIT     | The keyboard table in its README (`src/calculator/keyboard.ts`), and the approach to holding keys for a few frames and to building CEmu with Emscripten. No file was copied, and none of its images or prebuilt binaries are used. |
 
-The MIT notice of the reference page: Copyright (c) bifdu9898. Permission is granted to use, copy, modify, merge, publish,
-distribute, sublicense, and sell copies, subject to keeping this notice. The MIT notice of `hunterchen7/ti84ce` is the same.
+### bifdu9898/TI84Calculator, the full MIT notice
+
+Each file adapted from it starts with this comment: "adapted from github.com/bifdu9898/TI84Calculator (MIT), see
+THIRD_PARTY_NOTICES.md". The files are `src/site/site.css`, `src/site/render.ts`, `src/site/landing.ts`,
+`src/calculator/calculator.css`, `src/calculator/zoom.ts`, `src/calculator/CalculatorApp.tsx` and
+`src/calculator/ZoomControls.tsx`.
+
+This notice covers the HTML, CSS and JavaScript wrapper code of that project only. It does not cover, and Vertex does not
+use, any Texas Instruments or Pearson material. Vertex does not load, copy, mirror or link TI's emulator, Pearson's test delivery platform, its
+scripts or styles, the TI-84 Plus CE artwork, or any saved state. The artwork of the calculator body is Vertex's own drawing.
+
+```
+MIT License
+
+Copyright (c) 2025 TI 84 Calculator
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+The MIT notice of `hunterchen7/ti84ce` is the usual MIT text under its own copyright line.
 
 ## Runtime dependencies (shipped to the browser)
 

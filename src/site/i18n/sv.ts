@@ -2,11 +2,11 @@ import type { Strings } from './types.ts';
 
 export const sv: Strings = {
   htmlLang: 'sv',
-  title: '{brand}: gratis TI-84-räknare online',
+  title: '{brand}: reklamfri TI-84-räknare online',
   description:
-    'Använd en gratis TI-84 Plus CE-räknare i webbläsaren. {brand} kör det riktiga TI-OS i emulatorn CEmu, med en ROM från din egen räknare.',
+    'Använd en reklamfri TI-84 Plus CE-räknare i webbläsaren. {brand} kör det riktiga TI-OS i emulatorn CEmu, med en ROM från din egen räknare.',
   languageLabel: 'Språk',
-  h1: 'Gratis TI-84-räknare online',
+  h1: 'Reklamfri TI-84-räknare online',
   noticeLead: 'Oberoende webbplats.',
   noticeBody:
     '{brand} har ingen koppling till Texas Instruments. Webbplatsen kör TI-84 Plus CE i en emulator med öppen källkod.',
@@ -14,7 +14,7 @@ export const sv: Strings = {
   about: {
     heading: 'Om {brand}',
     paragraphs: [
-      'Välkommen till {brand}, en gratis grafräknare av typen TI-84 Plus CE som körs i din webbläsare. Den använder CEmu, en emulator med öppen källkod, för att köra det riktiga TI-OS på emulerad hårdvara. Du får samma knappar, menyer och resultat som på handenheten, på vilken enhet som helst och utan att installera något.',
+      '{brand} är en reklamfri TI-84 Plus CE i din webbläsare. CEmu kör det riktiga TI-OS, så knappar, menyer och resultat är desamma som på handenheten.',
       '{brand} är till för elever, lärare och alla som behöver en grafräknare till matte, naturvetenskap, teknik eller statistik. Du behöver bara ta med en sak: en ROM-fil från din egen räknare. Du laddar den en gång och {brand} kommer ihåg den.',
     ],
   },
@@ -197,7 +197,7 @@ export const sv: Strings = {
       {
         heading: 'Använda {brand}',
         paragraphs: [
-          '{brand} är gratis för privat bruk, i skolan och på jobbet. Använd det inte för att skada andra eller bryta mot lagen.',
+          '{brand} har ingen reklam. Du kan använda det privat, i skolan och på jobbet. Använd det inte för att skada andra eller bryta mot lagen.',
         ],
       },
       {

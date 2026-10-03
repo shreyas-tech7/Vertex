@@ -59,6 +59,48 @@ describe('copy', () => {
     },
   );
 
+  /** The natural way each language says "ad-free". Matched in lower case, so German "Werbefreier" counts for "werbefrei". */
+  const AD_FREE: Readonly<Record<Lang, string>> = {
+    en: 'ad-free',
+    fr: 'sans publicité',
+    de: 'werbefrei',
+    ja: '広告なし',
+    it: 'senza pubblicità',
+    es: 'sin anuncios',
+    pt: 'sem anúncios',
+    sv: 'reklamfri',
+    ru: 'без рекламы',
+  };
+
+  it.each(LANGS)('%s says ad-free in its H1, title, description and first About paragraph', (lang: Lang) => {
+    const s = STRINGS[lang];
+    const phrase = AD_FREE[lang];
+    expect(s.h1.toLowerCase(), `${lang} h1`).toContain(phrase);
+    expect(s.title.toLowerCase(), `${lang} title`).toContain(phrase);
+    expect(s.description.toLowerCase(), `${lang} description`).toContain(phrase);
+    expect(s.about.paragraphs[0]!.toLowerCase(), `${lang} about`).toContain(phrase);
+  });
+
+  /**
+   * The first About paragraph is kept short so it wraps to two lines at 1920 px (e2e/site.spec.ts measures the real wrap).
+   * 175 characters is the longest of the nine that fits in two lines of the 820 px column. Japanese is full width, so
+   * about 48 characters fit in a line.
+   */
+  it.each(LANGS)('%s keeps the first About paragraph short enough for two lines', (lang: Lang) => {
+    const first = STRINGS[lang].about.paragraphs[0]!.replaceAll('{brand}', 'Vertex');
+    expect(first.length, `${lang} first About paragraph`).toBeLessThanOrEqual(lang === 'ja' ? 90 : 175);
+  });
+
+  it.each(LANGS)('%s keeps the ROM sentence in the second About paragraph', (lang: Lang) => {
+    expect(STRINGS[lang].about.paragraphs, lang).toHaveLength(2);
+    expect(STRINGS[lang].about.paragraphs[1]!, `${lang} second About paragraph`).toContain('ROM');
+  });
+
+  it.each(LANGS)('%s no longer sells the site as free of charge', (lang: Lang) => {
+    const costWords = /(?<!ad-)\bfree\b|gratuit|kostenlos|無料|gratis|grátis|бесплатн/i;
+    for (const [path, text] of collect(STRINGS[lang])) expect(text, `${lang} ${path}`).not.toMatch(costWords);
+  });
+
   it('keeps filler and buzzwords out of the English copy', () => {
     const banned =
       /\b(seamless(ly)?|delve|pivotal|testament|it is important to note|not just|robust|leverage|cutting-edge|game-changing|unlock)\b/i;

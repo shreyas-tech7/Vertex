@@ -23,6 +23,19 @@ function legend(text: string): ReactNode {
   );
 }
 
+/** A small sun for the brightness keys (2nd with up or down). Drawn here, solid when bright and outlined when dim. */
+function Sun({ solid }: { solid: boolean }) {
+  return (
+    <svg viewBox="0 0 10 10" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="1.1">
+      <circle cx="5" cy="5" r="1.9" fill={solid ? 'currentColor' : 'none'} />
+      <path
+        strokeLinecap="round"
+        d="M5 .6v1.2M5 8.2v1.2M.6 5h1.2M8.2 5h1.2M1.9 1.9l.85.85M7.25 7.25l.85.85M1.9 8.1l.85-.85M7.25 2.75l.85-.85"
+      />
+    </svg>
+  );
+}
+
 const matrixAttribute = (rows: readonly number[]) =>
   rows.map((r) => r.toString(16).padStart(2, '0')).join('');
 
@@ -84,7 +97,7 @@ export function Keypad({ holders, rows, held, label }: KeypadProps) {
               <span
                 className="legend legend-alpha"
                 aria-hidden="true"
-                style={{ left: box.legendX + box.legendWidth - 30, top: box.legendY, width: 30 }}
+                style={{ left: box.legendX, top: box.legendY, width: box.legendWidth }}
               >
                 {key.alpha}
               </span>
@@ -144,6 +157,12 @@ export function Keypad({ holders, rows, held, label }: KeypadProps) {
           );
         })}
         <span className="arrow-hub" aria-hidden="true" />
+        <span className="brightness brightness-up" aria-hidden="true">
+          <Sun solid />
+        </span>
+        <span className="brightness brightness-down" aria-hidden="true">
+          <Sun solid={false} />
+        </span>
       </div>
     </div>
   );

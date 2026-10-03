@@ -2,11 +2,11 @@ import type { Strings } from './types.ts';
 
 export const it: Strings = {
   htmlLang: 'it',
-  title: '{brand}: calcolatrice TI-84 gratis online',
+  title: '{brand}: calcolatrice TI-84 senza pubblicità online',
   description:
-    'Usa gratis una calcolatrice TI-84 Plus CE nel tuo browser. {brand} esegue il vero TI-OS sull’emulatore CEmu, con una ROM della tua calcolatrice.',
+    'Usa una calcolatrice TI-84 Plus CE senza pubblicità nel tuo browser. {brand} esegue il vero TI-OS sull’emulatore CEmu, con una ROM della tua calcolatrice.',
   languageLabel: 'Lingua',
-  h1: 'Calcolatrice TI-84 gratis online',
+  h1: 'Calcolatrice TI-84 senza pubblicità online',
   noticeLead: 'Sito indipendente.',
   noticeBody:
     '{brand} non è affiliato a Texas Instruments. Esegue la TI-84 Plus CE su un emulatore open source.',
@@ -14,7 +14,7 @@ export const it: Strings = {
   about: {
     heading: 'Informazioni su {brand}',
     paragraphs: [
-      'Benvenuto su {brand}, una calcolatrice grafica TI-84 Plus CE gratuita che funziona nel tuo browser. Usa CEmu, un emulatore open source, per eseguire il vero TI-OS su hardware emulato. Hai gli stessi tasti, gli stessi menu e gli stessi risultati della calcolatrice fisica, su qualsiasi dispositivo e senza installare nulla.',
+      '{brand} è una TI-84 Plus CE senza pubblicità nel tuo browser. CEmu esegue il vero TI-OS, quindi tasti, menu e risultati sono quelli della calcolatrice.',
       '{brand} è pensato per studenti, insegnanti e chiunque abbia bisogno di una calcolatrice grafica per matematica, scienze, ingegneria o statistica. Serve una sola cosa: un file ROM della tua calcolatrice. Lo carichi una volta e {brand} lo ricorda.',
     ],
   },
@@ -199,7 +199,7 @@ export const it: Strings = {
       {
         heading: 'Usare {brand}',
         paragraphs: [
-          '{brand} è gratuito per uso personale, scolastico e di lavoro. Non usarlo per danneggiare altri o per violare la legge.',
+          '{brand} non mostra pubblicità. Puoi usarlo a scopo personale, scolastico e di lavoro. Non usarlo per danneggiare altri o per violare la legge.',
         ],
       },
       {

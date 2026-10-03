@@ -1,4 +1,5 @@
 import { KEYS } from '../src/core/os/keys.ts';
+import { LANGS } from '../src/site/i18n/types.ts';
 import { KEYBOARD_SHORTCUTS } from '../src/calculator/keyboard.ts';
 import { buildSyntheticRom } from '../src/test-support/syntheticRom.ts';
 import {
@@ -26,11 +27,13 @@ test.describe('ROM panel', () => {
     await expect(panel.locator('.rom-drop')).toContainText('Drop your ROM file here');
     const link = panel.getByRole('link', { name: 'ROM dump wizard in CEmu' });
     await expect(link).toHaveAttribute('href', 'https://ce-programming.github.io/CEmu/');
-    // The panel sits exactly over the 320 x 240 LCD.
+    // The panel sits exactly over the LCD, which is 232 x 174 (the 320 x 240 screen at 0.725).
     const screen = (await page.locator('.screen').boundingBox())!;
     const box = (await panel.boundingBox())!;
     expect(Math.abs(box.width - screen.width)).toBeLessThan(1);
     expect(Math.abs(box.height - screen.height)).toBeLessThan(1);
+    expect(screen.width).toBeCloseTo(232, 0);
+    expect(screen.height).toBeCloseTo(174, 0);
     // The Change ROM link only appears once a ROM is loaded.
     await expect(page.getByRole('button', { name: 'Change ROM' })).toBeHidden();
   });
@@ -77,6 +80,90 @@ test.describe('ROM panel', () => {
     await page.locator('.rom-drop').dispatchEvent('drop', { dataTransfer });
     await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running');
   });
+
+  test('accepts a ROM dropped anywhere on the calculator, not only on the panel', async ({ page }) => {
+    await openCalculator(page);
+    const dataTransfer = await romDataTransfer(page);
+    await page.locator('[data-key="ENTER"]').dispatchEvent('drop', { dataTransfer });
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running');
+    await expect(page.locator('.rom-panel')).toHaveCount(0);
+  });
+
+  test('a ROM dropped on the case while one is running replaces it', async ({ page }) => {
+    await openCalculator(page);
+    await loadSyntheticRom(page);
+    const dataTransfer = await romDataTransfer(page);
+    await page.locator('.arrow-pad').dispatchEvent('drop', { dataTransfer });
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            new Promise<string | null>((resolve) => {
+              const open = indexedDB.open('vertex-calculator');
+              open.onsuccess = () => {
+                const get = open.result.transaction('kv').objectStore('kv').get('rom');
+                get.onsuccess = () => resolve(get.result ? get.result.name : null);
+              };
+            }),
+        ),
+      )
+      .toBe('dropped.rom');
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running');
+  });
+
+  test('a reload with a stored ROM never shows the panel and data-phase never says needRom', async ({
+    page,
+  }) => {
+    await openCalculator(page);
+    await loadSyntheticRom(page);
+    // Watch from the first moment of the next page load, so nothing can slip past between two polls.
+    await page.addInitScript(() => {
+      const record = window as unknown as { phases: string[]; panelSeen: boolean };
+      record.phases = [];
+      record.panelSeen = false;
+      new MutationObserver(() => {
+        const phase = document.querySelector('.calc-body')?.getAttribute('data-phase');
+        if (phase && record.phases[record.phases.length - 1] !== phase) record.phases.push(phase);
+        if (document.querySelector('.rom-panel')) record.panelSeen = true;
+      }).observe(document, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        attributeFilter: ['data-phase'],
+      });
+    });
+    await page.reload();
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running');
+    const seen = await page.evaluate(() => {
+      const record = window as unknown as { phases: string[]; panelSeen: boolean };
+      return { phases: record.phases, panelSeen: record.panelSeen };
+    });
+    expect(seen.phases).not.toContain('needRom');
+    expect(seen.phases.length).toBeGreaterThan(0);
+    expect(seen.panelSeen).toBe(false);
+  });
+
+  for (const lang of LANGS) {
+    test(`${lang}: the ROM panel fits the 232 x 174 LCD without scrolling, with and without an error`, async ({
+      page,
+    }) => {
+      await openCalculator(page, `?lang=${lang}`);
+      const fits = () =>
+        page.locator('.rom-panel').evaluate((el) => ({
+          panelHeight: el.scrollHeight - el.clientHeight,
+          panelWidth: el.scrollWidth - el.clientWidth,
+          zoneHeight:
+            (el.querySelector('.rom-drop') as HTMLElement).scrollHeight -
+            (el.querySelector('.rom-drop') as HTMLElement).clientHeight,
+        }));
+      expect(await fits()).toEqual({ panelHeight: 0, panelWidth: 0, zoneHeight: 0 });
+      await page
+        .getByTestId('rom-input')
+        .setInputFiles({ ...ROM_ARGS, name: 'notes.rom', buffer: Buffer.from('not a ROM') });
+      await expect(page.locator('.rom-error')).not.toHaveText('');
+      expect(await fits()).toEqual({ panelHeight: 0, panelWidth: 0, zoneHeight: 0 });
+    });
+  }
 
   test('a reload boots straight to the calculator from the stored ROM', async ({ page }) => {
     await openCalculator(page);
@@ -334,13 +421,17 @@ test.describe('input', () => {
 });
 
 test.describe('screen', () => {
-  test('is a 320 x 240 canvas scaled with nearest-neighbour rendering', async ({ page }) => {
+  test('is a 320 x 240 canvas drawn at 232 x 174 with smooth scaling', async ({ page }) => {
     await openCalculator(page);
     const canvas = page.getByLabel('Calculator screen');
     await expect(canvas).toHaveJSProperty('width', 320);
     await expect(canvas).toHaveJSProperty('height', 240);
-    const rendering = await canvas.evaluate((el) => getComputedStyle(el).imageRendering);
-    expect(['pixelated', 'crisp-edges']).toContain(rendering);
+    const box = (await canvas.boundingBox())!;
+    expect(box.width).toBeCloseTo(232, 0);
+    expect(box.height).toBeCloseTo(174, 0);
+    expect(box.width / 320).toBeCloseTo(0.725, 3);
+    // Smooth scaling: never the nearest-neighbour keywords.
+    expect(await canvas.evaluate((el) => getComputedStyle(el).imageRendering)).toBe('auto');
   });
 
   test('paints frames from the worker', async ({ page }) => {
@@ -360,6 +451,9 @@ test.describe('screen', () => {
 });
 
 test.describe('zoom', () => {
+  // A wide window, so the cap for narrow screens never binds here. The cap has its own tests.
+  test.use({ viewport: { width: 1280, height: 900 } });
+
   test('runs 50% to 200% in 10% steps, scales from the top centre with a 0.3s ease, and remembers the level', async ({
     page,
   }) => {
@@ -374,7 +468,7 @@ test.describe('zoom', () => {
         transition: s.transitionProperty + ' ' + s.transitionDuration + ' ' + s.transitionTimingFunction,
       };
     });
-    expect(style.origin).toBe('170px 0px');
+    expect(style.origin).toBe('129px 0px');
     expect(style.transition).toBe('transform 0.3s ease');
 
     const plus = page.getByRole('button', { name: 'Zoom in' });
@@ -384,7 +478,7 @@ test.describe('zoom', () => {
       await expect(level).toHaveText(`${100 + i * 10}%`);
     }
     await expect(plus).toBeDisabled();
-    await expect.poll(async () => (await calculator.boundingBox())!.width).toBeCloseTo(680, 0);
+    await expect.poll(async () => (await calculator.boundingBox())!.width).toBeCloseTo(516, 0);
     await page.reload();
     await expect(level).toHaveText('200%');
     expect(await page.evaluate(() => localStorage.getItem('vertex_zoom_level'))).toBe('2');
@@ -392,7 +486,7 @@ test.describe('zoom', () => {
     for (let i = 1; i <= 15; i++) await minus.click();
     await expect(level).toHaveText('50%');
     await expect(minus).toBeDisabled();
-    await expect.poll(async () => (await calculator.boundingBox())!.width).toBeCloseTo(170, 0);
+    await expect.poll(async () => (await calculator.boundingBox())!.width).toBeCloseTo(129, 0);
     await page.reload();
     await expect(level).toHaveText('50%');
   });
@@ -449,3 +543,30 @@ async function dropFile(page: import('@playwright/test').Page, name: string, con
   );
   await page.locator('.calc-body').dispatchEvent('drop', { dataTransfer });
 }
+
+test.describe('zoom cap on narrow screens', () => {
+  // On the landing page the frame is the viewport minus 40. The calculator page measures its own width, so these
+  // tests open it at the frame widths 280, 320, 350 and 390 (the 320, 360, 390 and 430 px phones).
+  const CAPS: Record<number, number> = { 280: 1.08, 320: 1.24, 350: 1.35, 390: 1.51 };
+  for (const [width, cap] of Object.entries(CAPS)) {
+    for (const requested of [0.5, 1, 2]) {
+      test(`frame ${width}px wide, ${requested * 100}% requested`, async ({ page }) => {
+        await page.setViewportSize({ width: Number(width), height: 844 });
+        await page.addInitScript(
+          (value) => localStorage.setItem('vertex_zoom_level', value),
+          String(requested),
+        );
+        await openCalculator(page);
+        const effective = Math.min(requested, cap);
+        await expect(page.locator('#zoom_level')).toHaveText(`${Math.round(effective * 100)}%`);
+        await expect
+          .poll(async () => (await page.locator('#calculatorDiv').boundingBox())!.width)
+          .toBeCloseTo(258 * effective, 0);
+        expect(258 * effective).toBeLessThanOrEqual(Number(width));
+        const plus = page.getByRole('button', { name: 'Zoom in' });
+        if (requested > cap) await expect(plus).toBeDisabled();
+        else await expect(plus).toBeEnabled();
+      });
+    }
+  }
+});

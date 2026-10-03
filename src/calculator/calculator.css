@@ -1,4 +1,8 @@
-/* The calculator page. Layout and zoom controls follow the reference page (ti84calc.html). The calculator is original. */
+/*
+ * The calculator page.
+ * Adapted from github.com/bifdu9898/TI84Calculator (MIT), see THIRD_PARTY_NOTICES.md: the page shell and the zoom
+ * controls. The calculator body, keys, arrow pad and ROM panel are Vertex's own drawing.
+ */
 * {
   box-sizing: border-box;
 }
@@ -24,7 +28,7 @@ body {
   flex-direction: column;
 }
 
-/* Zoom controls: minus, percentage, plus. */
+/* Zoom controls: minus, percentage, plus. 78 px tall with its margins, so the case starts 78 px below the frame top. */
 #zoom_controls {
   display: flex;
   justify-content: center;
@@ -38,6 +42,8 @@ body {
 #zoom_controls button {
   padding: 8px 16px;
   font-size: 14px;
+  /* 20 + 16 padding + 2 border = 38 px tall */
+  line-height: 20px;
   cursor: pointer;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -84,12 +90,16 @@ body {
   transition: transform 0.3s ease;
 }
 
+/* Under the case: the quiet Change ROM link and the notice. Fixed at 72 px so the frame is the case plus 150 px. */
 .below {
   display: flex;
+  flex: none;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 14px 20px 24px;
+  gap: 4px;
+  height: 72px;
+  padding: 10px 20px 0;
+  overflow: hidden;
 }
 
 .change-rom {
@@ -97,77 +107,59 @@ body {
   border: 0;
   background: none;
   font: inherit;
-  font-size: 14px;
-  font-weight: bold;
-  color: #000;
+  font-size: 12px;
+  line-height: 18px;
+  color: #777;
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
 }
 
 .change-rom:hover {
-  text-decoration-thickness: 2px;
+  color: #000;
 }
 
 .notice {
   margin: 0;
-  font-size: 12px;
-  color: #666;
+  font-size: 11px;
+  line-height: 1.3;
+  color: #888;
   text-align: center;
 }
 
-/* The calculator body. */
+/* The calculator body: solid black, a small radius, almost no bezel around a wide LCD. */
 .calc-body {
   position: relative;
-  width: 340px;
-  height: 738px;
-  border-radius: 30px 30px 24px 24px;
-  background: linear-gradient(180deg, #24272d 0%, #141619 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    0 10px 30px rgba(0, 0, 0, 0.18);
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  background: #000;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.2);
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
 }
 
-.brand {
-  position: absolute;
-  left: 18px;
-  top: 10px;
-  height: 22px;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 22px;
-  letter-spacing: 0.34em;
-  text-transform: uppercase;
-  color: #d9dce2;
+.calc-body.is-dragging {
+  box-shadow:
+    0 0 0 3px #3a72d9,
+    0 8px 22px rgba(0, 0, 0, 0.2);
 }
 
 .screen {
   position: absolute;
   background: #000;
-  border-radius: 3px;
-  box-shadow:
-    0 0 0 4px #060709,
-    0 0 0 5px #2b2f36;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px #2a2a2a;
   overflow: hidden;
 }
 
+/* The 320 x 240 canvas is drawn at 232 x 174 (scale 0.725) and scaled smoothly, never with nearest-neighbour. */
 .screen canvas {
   display: block;
   width: 100%;
   height: 100%;
-  image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
-  image-rendering: pixelated;
-}
-
-.screen.is-dragging {
-  box-shadow:
-    0 0 0 4px #060709,
-    0 0 0 6px #3a72d9;
+  image-rendering: auto;
 }
 
 /* Loading state. */
@@ -178,21 +170,21 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 8px;
   background: #fff;
   color: #555;
-  font-size: 13px;
+  font-size: 11px;
 }
 
 .screen-failed {
-  padding: 20px;
+  padding: 12px;
   color: #b00020;
   text-align: center;
 }
 
 .spinner {
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
   border: 2px solid #e0e0e0;
   border-top-color: #000;
   border-radius: 50%;
@@ -216,26 +208,26 @@ body {
   }
 }
 
-/* ROM panel. */
+/* ROM panel: small, white, black text. It sits exactly over the LCD (232 x 174) until a ROM is loaded. */
 .rom-panel {
   position: absolute;
   inset: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 14px 16px 10px;
+  gap: 5px;
+  padding: 8px 10px 6px;
   overflow: auto;
   background: #fff;
   color: #333;
-  font-size: 13px;
-  line-height: 1.4;
+  font-size: 10px;
+  line-height: 1.3;
 }
 
 .rom-panel h1 {
   margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.25;
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.2;
   text-align: center;
   color: #000;
 }
@@ -245,10 +237,11 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 10px;
-  padding: 10px;
-  border: 1px dashed #ccc;
-  border-radius: 8px;
+  gap: 6px;
+  min-height: 0;
+  padding: 6px;
+  border: 1px dashed #c8cbd0;
+  border-radius: 6px;
   background: #fafafa;
   text-align: center;
 }
@@ -260,25 +253,25 @@ body {
 
 .rom-drop p {
   margin: 0;
-  font-size: 12.5px;
+  font-size: 10px;
   color: #555;
 }
 
 .rom-actions {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .rom-button {
-  padding: 8px 18px;
+  padding: 5px 12px;
   border: 1px solid #000;
-  border-radius: 6px;
+  border-radius: 5px;
   background: #000;
   color: #fff;
   font: inherit;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 10.5px;
+  font-weight: 600;
   line-height: 1.2;
   cursor: pointer;
   transition: background 0.3s;
@@ -304,23 +297,23 @@ body {
 }
 
 .rom-error {
-  min-height: 1.4em;
+  min-height: 0;
   margin: 0;
-  font-size: 12.5px;
+  font-size: 10px;
   color: #b00020;
   text-align: center;
 }
 
 .rom-hint {
   margin: 0;
-  font-size: 11.5px;
+  font-size: 9px;
   color: #666;
   text-align: center;
 }
 
 .rom-hint a {
   color: #000;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .rom-cancel {
@@ -329,7 +322,7 @@ body {
   border: 0;
   background: none;
   font: inherit;
-  font-size: 12px;
+  font-size: 10px;
   color: #666;
   text-decoration: underline;
   cursor: pointer;
@@ -337,15 +330,15 @@ body {
 
 .toast {
   position: absolute;
-  left: 8px;
-  right: 8px;
-  bottom: 8px;
-  padding: 6px 10px;
-  border-radius: 6px;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  padding: 4px 8px;
+  border-radius: 5px;
   background: rgba(0, 0, 0, 0.88);
   color: #fff;
-  font-size: 12px;
-  line-height: 1.35;
+  font-size: 10px;
+  line-height: 1.3;
   text-align: center;
 }
 
@@ -368,39 +361,34 @@ body {
   pointer-events: auto;
 }
 
+/* Function keys (MATH, APPS, SIN ...) are black with a thin light outline and bold white labels. */
 .key {
   position: absolute;
   padding: 0;
-  border: 0;
-  border-radius: 7px;
-  background: #3b4048;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 5px;
+  background: #000;
   color: #fff;
   font: inherit;
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 9px;
+  font-weight: 800;
   line-height: 1;
-  box-shadow:
-    0 2px 0 #101215,
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
   cursor: pointer;
   touch-action: none;
   -webkit-tap-highlight-color: transparent;
   transition:
     transform 0.05s,
-    box-shadow 0.05s,
+    background-color 0.1s,
     filter 0.1s;
 }
 
 .key:hover {
-  filter: brightness(1.12);
+  background: #1c1c1c;
 }
 
 .key.is-down {
-  transform: translateY(2px);
-  box-shadow:
-    0 0 0 #101215,
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  filter: brightness(1.3);
+  transform: translateY(1px);
+  background: #3a3a3a;
 }
 
 .key:focus-visible,
@@ -413,54 +401,94 @@ body {
   outline-offset: 2px;
 }
 
+/* Y= to GRAPH, the operators and ENTER are light gray with black labels. */
+.key-fn,
+.key-op,
+.key-enter {
+  border-color: #b9bdc4;
+  background: #d9dce1;
+  color: #000;
+}
+
 .key-fn {
-  border-radius: 6px;
-  background: #2a2e34;
-  font-size: 10px;
+  font-size: 8px;
 }
 
-.key-second {
-  background: #3a72d9;
-}
-
-.key-alpha {
-  background: #2f9d5f;
-}
-
-.key-num {
-  background: #f2f3f5;
-  color: #111;
+.key-op {
   font-size: 15px;
   font-weight: 700;
 }
 
-.key-op {
-  background: #cdd1d8;
-  color: #111;
-  font-size: 17px;
-  font-weight: 600;
+.key-enter {
+  font-size: 9px;
 }
 
-.key-enter {
-  background: #cdd1d8;
-  color: #111;
-  font-size: 11px;
+.key-fn:hover,
+.key-op:hover,
+.key-enter:hover {
+  background: #e6e8eb;
+}
+
+.key-fn.is-down,
+.key-op.is-down,
+.key-enter.is-down {
+  background: #b9bdc4;
+}
+
+/* Digits, the decimal point and the negate key are white with black labels. */
+.key-num {
+  border-color: #d0d3d8;
+  background: #fff;
+  color: #000;
+  font-size: 13px;
   font-weight: 700;
 }
 
-.key-num.is-down,
-.key-op.is-down,
-.key-enter.is-down {
-  filter: brightness(0.82);
+.key-num:hover {
+  background: #f1f2f4;
+}
+
+.key-num.is-down {
+  background: #d6d8dc;
+}
+
+/* 2nd is solid blue and ALPHA is solid green. */
+.key-second {
+  border-color: #2e6be6;
+  background: #2e6be6;
+  color: #fff;
+}
+
+.key-second:hover {
+  background: #4a80f0;
+}
+
+.key-second.is-down {
+  background: #1f55c2;
+}
+
+.key-alpha {
+  border-color: #2ca25a;
+  background: #2ca25a;
+  color: #fff;
+}
+
+.key-alpha:hover {
+  background: #3bb56a;
+}
+
+.key-alpha.is-down {
+  background: #1f8147;
 }
 
 .legend {
   position: absolute;
-  height: 11px;
-  font-size: 7.5px;
-  font-weight: 700;
-  line-height: 11px;
-  letter-spacing: 0.02em;
+  height: 10px;
+  font-size: 5.8px;
+  font-weight: 800;
+  line-height: 10px;
+  /* A 2nd legend and an ALPHA legend share one strip. CATALOG and space touched, so each letter is pulled in 0.12 px. */
+  letter-spacing: -0.02em;
   white-space: nowrap;
   pointer-events: none;
 }
@@ -471,22 +499,20 @@ body {
 }
 
 .legend-second {
-  color: #6ea4ff;
+  color: #5b95ff;
 }
 
 .legend-alpha {
-  color: #4ed184;
+  color: #3fcf7a;
   text-align: right;
 }
 
-/* Arrow pad: four wedges cut from one disc. */
+/* Arrow pad: a light gray ring cut into four wedges, a black hub, and two small brightness icons. */
 .arrow-pad {
   position: absolute;
   border-radius: 50%;
-  background: #2a2e34;
-  box-shadow:
-    0 2px 0 #101215,
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  background: #d9dce1;
+  box-shadow: inset 0 0 0 1px #b9bdc4;
 }
 
 .arrow {
@@ -496,23 +522,23 @@ body {
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: #e6e8ec;
+  color: #111;
   cursor: pointer;
   touch-action: none;
   -webkit-tap-highlight-color: transparent;
 }
 
 .arrow:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.07);
 }
 
 .arrow.is-down {
-  background: #4b515b;
+  background: rgba(0, 0, 0, 0.22);
 }
 
 .arrow-glyph {
   position: absolute;
-  font-size: 11px;
+  font-size: 10px;
   line-height: 1;
   transform: translate(-50%, -50%);
   pointer-events: none;
@@ -525,7 +551,29 @@ body {
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: #1b1e22;
+  background: #000;
+  box-shadow: 0 0 0 1px #8a8e96;
   transform: translate(-50%, -50%);
   pointer-events: none;
+}
+
+.brightness {
+  position: absolute;
+  left: calc(100% + 1px);
+  width: 9px;
+  height: 9px;
+  color: #5b95ff;
+  pointer-events: none;
+}
+
+.brightness svg {
+  display: block;
+}
+
+.brightness-up {
+  top: 3px;
+}
+
+.brightness-down {
+  bottom: 3px;
 }

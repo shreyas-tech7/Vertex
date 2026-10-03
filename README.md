@@ -1,6 +1,6 @@
 # Vertex
 
-A free TI-84 Plus CE calculator that runs in your browser. Vertex runs the real TI-OS on
+An ad-free TI-84 Plus CE calculator that runs in your browser. Vertex runs the real TI-OS on
 [CEmu](https://github.com/CE-Programming/CEmu), an open source emulator compiled to WebAssembly, with a ROM from
 **your own calculator**. No ads, no accounts, no tracking.
 

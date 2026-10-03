@@ -95,6 +95,22 @@ test.describe('landing page', () => {
     expect((await archive.body()).byteLength).toBeGreaterThan(1_000_000);
   });
 
+  for (const lang of LANGS) {
+    test(`${lang}: the first About paragraph wraps to two lines at 1920 px`, async ({ page, isMobile }) => {
+      test.skip(isMobile, 'The 1920 px layout is a desktop check');
+      await page.setViewportSize({ width: 1920, height: 855 });
+      const home = pages.find((p) => p.kind === 'home' && p.lang === lang)!;
+      await page.goto(urlOf(home.file));
+      const lines = await page
+        .locator('.content .section p')
+        .first()
+        .evaluate((p) =>
+          Math.round(p.getBoundingClientRect().height / parseFloat(getComputedStyle(p).lineHeight)),
+        );
+      expect(lines).toBeLessThanOrEqual(2);
+    });
+  }
+
   test('"Back to Calculator" scrolls to the top', async ({ page }) => {
     await page.goto('/');
     await page.locator('.cta-button').scrollIntoViewIfNeeded();
@@ -114,6 +130,8 @@ test.describe('landing page', () => {
 });
 
 test.describe('iframe sizing', () => {
+  test.use({ viewport: { width: 1280, height: 900 } });
+
   test('the iframe grows and shrinks with the calculator zoom', async ({ page }) => {
     await page.goto('/');
     const iframe = page.locator('#calculatorFrame');
@@ -121,20 +139,16 @@ test.describe('iframe sizing', () => {
     const heightAt = async () =>
       Number.parseFloat((await iframe.evaluate((el) => (el as HTMLIFrameElement).style.height)) || '0');
 
-    // 100%: the page reports controls + 738px + the lines under the calculator.
-    await expect.poll(heightAt).toBeGreaterThan(800);
-    const at100 = await heightAt();
+    // 100%: the page reports the case (604) plus 150.
+    await expect.poll(heightAt).toBe(754);
 
     const plus = frame.getByRole('button', { name: 'Zoom in' });
     for (let i = 0; i < 10; i++) await plus.click();
-    await expect.poll(heightAt).toBeGreaterThan(at100 + 700);
-    const at200 = await heightAt();
-    expect(at200).toBeCloseTo(at100 + 738, -1);
+    await expect.poll(heightAt).toBe(1358);
 
     const minus = frame.getByRole('button', { name: 'Zoom out' });
     for (let i = 0; i < 15; i++) await minus.click();
-    await expect.poll(heightAt).toBeLessThan(at100 - 300);
-    expect(await heightAt()).toBeCloseTo(at100 - 369, -1);
+    await expect.poll(heightAt).toBe(452);
   });
 
   test('zoom survives a reload of the landing page', async ({ page }) => {
