@@ -50,9 +50,12 @@ export class EmulatorRunner {
   /** Frames of emulated time that have run since the last boot. */
   framesRun = 0;
 
+  /** The compiled WebAssembly handed over by the page, when it could compile it itself. */
+  private module: WebAssembly.Module | undefined;
+
   constructor(
     private readonly host: RunnerHost,
-    private readonly createCore: () => Promise<EmulatorCore>,
+    private readonly createCore: (module?: WebAssembly.Module) => Promise<EmulatorCore>,
   ) {}
 
   get isPaused(): boolean {
@@ -68,7 +71,7 @@ export class EmulatorRunner {
   }
 
   private async ensureCore(): Promise<EmulatorCore> {
-    this.core ??= await this.createCore();
+    this.core ??= await this.createCore(this.module);
     return this.core;
   }
 
@@ -224,6 +227,7 @@ export class EmulatorRunner {
   handle(message: ToWorker): void {
     switch (message.type) {
       case 'init':
+        this.module = message.module;
         this.ensureCore().then(
           () => this.post({ type: 'ready' }),
           (error: unknown) =>

@@ -51,10 +51,29 @@ function vertexPages(): Plugin {
       handler(html, context) {
         if (!context.bundle) return html; // dev server: Vite and React Refresh need inline scripts
         const tag = `<meta http-equiv="Content-Security-Policy" content="${CONTENT_SECURITY_POLICY}">`;
-        return html.replace(/<meta charset="UTF-8"\s*\/?>/i, (match) => `${match}\n    ${tag}`);
+        let out = html.replace(/<meta charset="UTF-8"\s*\/?>/i, (match) => `${match}\n    ${tag}`);
+        if (context.path.endsWith('calculator.html')) out = preloadEmulator(out, context.bundle);
+        return out;
       },
     },
   };
+}
+
+/**
+ * The emulator is the slowest thing on the page, so the calculator page asks for it in the first bytes of the
+ * response instead of waiting for its own bundle to run: the worker chunk as a module preload, and the WebAssembly
+ * as a fetch preload, which is what `WebAssembly.compileStreaming` will ask for.
+ */
+function preloadEmulator(html: string, bundle: Record<string, unknown>): string {
+  const names = Object.keys(bundle);
+  const wasm = names.filter((name) => name.endsWith('.wasm'));
+  const worker = names.filter((name) => /assets\/worker-[^/]+\.js$/.test(name));
+  const links = [
+    ...worker.map((name) => `  <link rel="modulepreload" crossorigin href="./${name}">`),
+    ...wasm.map((name) => `  <link rel="preload" as="fetch" crossorigin href="./${name}">`),
+  ];
+  if (links.length === 0) return html;
+  return html.replace('</head>', `${links.join('\n')}\n  </head>`);
 }
 
 export default defineConfig({
