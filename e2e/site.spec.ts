@@ -131,6 +131,13 @@ test.describe('landing page', () => {
 
 test.describe('iframe sizing', () => {
   test.use({ viewport: { width: 1280, height: 900 } });
+  // A touch profile starts the calculator bigger than 100% until the visitor picks a level. Pin 100% for the first
+  // load only, so the reload in the second test still proves the visitor's own choice is remembered.
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      if (localStorage.getItem('vertex_zoom_level') === null) localStorage.setItem('vertex_zoom_level', '1');
+    });
+  });
 
   test('the iframe grows and shrinks with the calculator zoom', async ({ page }) => {
     await page.goto('/');

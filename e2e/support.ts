@@ -44,6 +44,10 @@ export async function loadSyntheticRom(page: Page): Promise<void> {
   await expect(page.locator('.rom-panel')).toHaveCount(0);
 }
 
+/** The zoom the page is showing, in percent. A touch profile starts at 130% until the visitor picks a level. */
+export const shownZoom = async (page: Page): Promise<number> =>
+  Number.parseFloat((await page.locator('#zoom_level').textContent())!.replace('%', ''));
+
 export const MATRIX_EMPTY = '0000000000000000';
 
 /** The emulated keypad as 16 hex digits (eight rows of one byte), as the worker reports it. */
@@ -87,4 +91,59 @@ export async function recordMatrix(page: Page): Promise<() => string[]> {
     new MutationObserver(report).observe(keypad, { attributes: true, attributeFilter: ['data-matrix'] });
   });
   return () => [...seen];
+}
+
+/**
+ * Leaves a synthetic ROM in IndexedDB before the page's own script runs, exactly as a previous visit would have.
+ * The bytes are built inside the page, so a 4 MB file never crosses the test protocol.
+ */
+export async function seedStoredRom(page: Page, name = 'stored.rom'): Promise<void> {
+  const builder = buildSyntheticRom.toString();
+  await page.addInitScript(`
+    (() => {
+      const build = ${builder};
+      const rom = build();
+      const open = indexedDB.open('vertex-calculator');
+      open.onupgradeneeded = () => {
+        if (!open.result.objectStoreNames.contains('kv')) open.result.createObjectStore('kv');
+      };
+      open.onsuccess = () => {
+        const store = open.result.transaction('kv', 'readwrite').objectStore('kv');
+        store.put(
+          { name: ${JSON.stringify(name)}, size: rom.byteLength, data: rom.buffer, savedAt: Date.now() },
+          'rom',
+        );
+      };
+    })();
+  `);
+}
+
+/**
+ * Reads what the page left in IndexedDB, without dragging the bytes across the test protocol: a saved state is about
+ * 5 MB, and serialising one on every poll would take longer than the wait. `bytes` is the size of the stored value.
+ */
+export async function readStored<T>(
+  page: Page,
+  key: string,
+): Promise<(Omit<T, 'data'> & { bytes: number }) | null> {
+  return page.evaluate(
+    (name) =>
+      new Promise<Record<string, unknown> | null>((resolve) => {
+        const open = indexedDB.open('vertex-calculator');
+        open.onsuccess = () => {
+          const get = open.result.transaction('kv').objectStore('kv').get(name);
+          get.onsuccess = () => {
+            const value = get.result as Record<string, unknown> | undefined;
+            if (!value) {
+              resolve(null);
+              return;
+            }
+            const { data, ...rest } = value as { data?: ArrayBuffer };
+            resolve({ ...rest, bytes: data?.byteLength ?? 0 });
+          };
+        };
+        open.onerror = () => resolve(null);
+      }),
+    key,
+  ) as Promise<(Omit<T, 'data'> & { bytes: number }) | null>;
 }
