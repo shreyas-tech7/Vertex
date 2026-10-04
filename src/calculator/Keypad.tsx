@@ -1,7 +1,22 @@
-import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
+import type { CSSProperties } from 'react';
+import type {
+  MouseEvent as ReactMouseEvent,
+  PointerEvent as ReactPointerEvent,
+  ReactNode,
+  TouchEvent as ReactTouchEvent,
+} from 'react';
 import { KEY_BY_ID, type KeyId } from '../core/os/keys.ts';
 import type { KeyHolders } from './keyHolders.ts';
 import { ARROW_PAD, ARROWS, BODY_WIDTH, KEY_BOXES } from './keypadLayout.ts';
+import {
+  beginLegacyPress,
+  beginPress,
+  endLegacyPress,
+  endPress,
+  mouseHolder,
+  touchHolder,
+  type InputMode,
+} from './pointerInput.ts';
 
 interface KeypadProps {
   holders: KeyHolders;
@@ -9,6 +24,8 @@ interface KeypadProps {
   rows: readonly number[];
   held: ReadonlySet<KeyId>;
   label: string;
+  /** Pointer events, or mouse and touch events in a browser that has no PointerEvent. */
+  mode?: InputMode;
 }
 
 /** Renders "10^x" and "e^x" with a real superscript. Everything else prints as written. */
@@ -39,26 +56,16 @@ function Sun({ solid }: { solid: boolean }) {
 const matrixAttribute = (rows: readonly number[]) =>
   rows.map((r) => r.toString(16).padStart(2, '0')).join('');
 
-export function Keypad({ holders, rows, held, label }: KeypadProps) {
+export function Keypad({ holders, rows, held, label, mode = 'pointer' }: KeypadProps) {
   const emulatedDown = (id: KeyId): boolean => {
     const key = KEY_BY_ID.get(id)!;
     return ((rows[key.row] ?? 0) >> key.col) & 1 ? true : false;
   };
 
   const pointerHandlers = (id: KeyId) => {
-    const release = (event: ReactPointerEvent<HTMLButtonElement>) =>
-      holders.release(id, `ptr:${event.pointerId}`);
+    const release = (event: ReactPointerEvent<HTMLButtonElement>) => endPress(event, holders, id);
     return {
-      onPointerDown: (event: ReactPointerEvent<HTMLButtonElement>) => {
-        if (event.pointerType === 'mouse' && event.button !== 0) return;
-        event.preventDefault();
-        try {
-          event.currentTarget.setPointerCapture(event.pointerId);
-        } catch {
-          /* the pointer is already gone */
-        }
-        holders.press(id, `ptr:${event.pointerId}`);
-      },
+      onPointerDown: (event: ReactPointerEvent<HTMLButtonElement>) => beginPress(event, holders, id),
       onPointerUp: release,
       onPointerCancel: release,
       onLostPointerCapture: release,
@@ -69,6 +76,42 @@ export function Keypad({ holders, rows, held, label }: KeypadProps) {
       },
     };
   };
+
+  /** The same behaviour without PointerEvent: a mouse press and one press per finger. */
+  const legacyHandlers = (id: KeyId) => {
+    const down = (event: ReactMouseEvent<HTMLButtonElement>, holder: number) => {
+      if (event.button !== 0) return;
+      event.preventDefault();
+      beginLegacyPress(holders, id, holder);
+    };
+    return {
+      onMouseDown: (event: ReactMouseEvent<HTMLButtonElement>) => down(event, mouseHolder),
+      onMouseUp: () => endLegacyPress(holders, id, mouseHolder),
+      onMouseLeave: () => endLegacyPress(holders, id, mouseHolder),
+      onTouchStart: (event: ReactTouchEvent<HTMLButtonElement>) => {
+        event.preventDefault();
+        for (const touch of Array.from(event.changedTouches)) {
+          beginLegacyPress(holders, id, touchHolder(touch.identifier));
+        }
+      },
+      onTouchEnd: (event: ReactTouchEvent<HTMLButtonElement>) => {
+        for (const touch of Array.from(event.changedTouches)) {
+          endLegacyPress(holders, id, touchHolder(touch.identifier));
+        }
+      },
+      onTouchCancel: (event: ReactTouchEvent<HTMLButtonElement>) => {
+        for (const touch of Array.from(event.changedTouches)) {
+          endLegacyPress(holders, id, touchHolder(touch.identifier));
+        }
+      },
+      onContextMenu: (event: { preventDefault(): void }) => event.preventDefault(),
+      onClick: (event: { detail: number }) => {
+        if (event.detail === 0) holders.tap(id);
+      },
+    };
+  };
+
+  const handlers = (id: KeyId) => (mode === 'pointer' ? pointerHandlers(id) : legacyHandlers(id));
 
   const classes = (id: KeyId, base: string) => `${base}${held.has(id) || emulatedDown(id) ? ' is-down' : ''}`;
 
@@ -105,7 +148,16 @@ export function Keypad({ holders, rows, held, label }: KeypadProps) {
             <button
               type="button"
               className={classes(box.id, `key key-${box.kind}`)}
-              style={{ left: box.x, top: box.y, width: box.width, height: box.height }}
+              style={
+                {
+                  left: box.x,
+                  top: box.y,
+                  width: box.width,
+                  height: box.height,
+                  '--pad-x': `${box.padX}px`,
+                  '--pad-y': `${box.padY}px`,
+                } as CSSProperties
+              }
               data-key={box.id}
               data-row={key.row}
               data-col={key.col}
@@ -118,7 +170,7 @@ export function Keypad({ holders, rows, held, label }: KeypadProps) {
               ]
                 .filter(Boolean)
                 .join(' · ')}
-              {...pointerHandlers(box.id)}
+              {...handlers(box.id)}
             >
               {key.label}
             </button>
@@ -144,7 +196,7 @@ export function Keypad({ holders, rows, held, label }: KeypadProps) {
               data-col={key.col}
               data-emu-down={emulatedDown(arrow.id)}
               aria-label={key.aria}
-              {...pointerHandlers(arrow.id)}
+              {...handlers(arrow.id)}
             >
               <span
                 className="arrow-glyph"
