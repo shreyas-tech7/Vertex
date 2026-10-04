@@ -16,7 +16,12 @@ interface RomPanelProps {
   onCancel(): void;
 }
 
-/** The panel that sits where the LCD is until the visitor has loaded a ROM. */
+/**
+ * The panel that sits where the LCD is until the visitor has loaded a ROM.
+ *
+ * One step: pick the file, or drop it. The file input takes any file, because iOS refuses pickers that ask for an
+ * extension it does not know, and Vertex checks the contents itself. Drag and drop is a desktop extra.
+ */
 export function RomPanel({ strings, hasRom, busy, error, onFile, onRemove, onCancel }: RomPanelProps) {
   const input = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
@@ -79,19 +84,23 @@ export function RomPanel({ strings, hasRom, busy, error, onFile, onRemove, onCan
       <p className="rom-error" role="alert">
         {error}
       </p>
-      <p className="rom-hint">
-        {hint ? (
-          <>
-            {hint[0]}
-            <a href={CEMU_DOCS_URL} target="_blank" rel="noopener noreferrer">
-              {strings.romHintLink}
-            </a>
-            {hint[1]}
-          </>
-        ) : (
-          strings.romHint
-        )}
-      </p>
+      <details className="rom-guide">
+        <summary>{strings.romGuideTitle}</summary>
+        <p className="rom-hint">
+          {hint ? (
+            <>
+              {hint[0]}
+              <a href={CEMU_DOCS_URL} target="_blank" rel="noopener noreferrer">
+                {strings.romHintLink}
+              </a>
+              {hint[1]}
+            </>
+          ) : (
+            strings.romHint
+          )}
+        </p>
+        <p>{strings.romGuide}</p>
+      </details>
       {hasRom && (
         <button type="button" className="rom-cancel" disabled={working} onClick={onCancel}>
           {strings.cancel}

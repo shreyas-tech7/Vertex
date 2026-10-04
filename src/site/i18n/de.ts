@@ -248,6 +248,16 @@ export const de: Strings = {
     romChoose: 'ROM-Datei wählen',
     romHint: 'Erstelle eine ROM von deinem eigenen Rechner mit dem {link}.',
     romHintLink: 'ROM-Dump-Assistenten in CEmu',
+    romGuideTitle: 'So bekommst du eine ROM von deinem eigenen Rechner',
+    romGuide:
+      'Verbinde deine eigene TI-84 Plus CE mit einem Computer, öffne CEmu und schreibe mit dem ROM-Dump-Assistenten eine ROM-Datei auf deine Festplatte. Behalte diese Datei. Vertex hat keine ROM und kann dir keine geben.',
+    installTitle: 'Behalte deine ROM auf diesem Gerät',
+    installBody:
+      'Safari kann den Speicher einer Website löschen, die du länger nicht geöffnet hast. Füge Vertex zum Home-Bildschirm hinzu, damit deine ROM bleibt. Tippe auf Teilen, dann auf Zum Home-Bildschirm.',
+    installDismiss: 'Verstanden',
+    restoring: 'Deine ROM wurde aus diesem Browser wiederhergestellt.',
+    unsupported:
+      'Dieser Browser kann den Rechner nicht starten, weil eine Funktion fehlt, die der Emulator braucht. Versuche eine aktuelle Version von Chrome, Safari, Edge oder Firefox.',
     replace: 'Ersetzen',
     remove: 'Entfernen',
     cancel: 'Abbrechen',
@@ -257,10 +267,11 @@ export const de: Strings = {
     loading: 'Der Emulator wird geladen…',
     notice: 'Unabhängige Website. Keine Verbindung zu Texas Instruments.',
     errors: {
-      empty: 'Diese Datei ist leer.',
-      tooLarge: 'Diese Datei ist zu groß für eine Rechner-ROM.',
-      invalid: 'Diese Datei ist keine TI-84 Plus CE ROM.',
-      notCE: 'Diese Datei ist keine TI-84 Plus CE ROM.',
+      empty: 'Diese Datei ist leer. Wähle die ROM deines Rechners.',
+      tooSmall: 'Diese Datei ist zu klein für eine ROM. Eine TI-84 Plus CE ROM ist etwa 4 MB groß.',
+      tooLarge: 'Diese Datei ist zu groß für eine ROM. Eine TI-84 Plus CE ROM ist etwa 4 MB groß.',
+      invalid: 'Diese Datei ist keine TI-84 Plus CE ROM. Wähle die ROM deines Rechners.',
+      notCE: 'Diese Datei ist keine TI-84 Plus CE ROM. Wähle die ROM deines Rechners.',
       unavailable: 'Der Emulator konnte nicht starten. Lade die Seite neu und versuche es erneut.',
       storage: 'Dein Browser hat die ROM nicht gespeichert. Du musst sie beim nächsten Mal erneut laden.',
       crashed: 'Der Emulator wurde angehalten. Lade die Seite neu, um ihn zu starten.',

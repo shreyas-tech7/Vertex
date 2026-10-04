@@ -242,6 +242,16 @@ export const ja: Strings = {
     romChoose: 'ROMファイルを選ぶ',
     romHint: 'ご自身の電卓のROMは、{link}で作れます。',
     romHintLink: 'CEmuのROMダンプウィザード',
+    romGuideTitle: '自分の電卓からROMを作る方法',
+    romGuide:
+      '自分のTI-84 Plus CEをパソコンに接続し、CEmuを開いてROMダンプウィザードでROMファイルを保存します。そのファイルを保管してください。VertexはROMを持っておらず、お渡しすることもできません。',
+    installTitle: 'ROMをこの端末に残す',
+    installBody:
+      'Safariは、しばらく開いていないサイトの保存領域を消すことがあります。ROMを残すため、Vertexをホーム画面に追加してください。共有をタップし、ホーム画面に追加を選びます。',
+    installDismiss: 'わかりました',
+    restoring: 'このブラウザーに保存されたROMを復元しました。',
+    unsupported:
+      'このブラウザーは、エミュレーターに必要な機能がないため、電卓を動かせません。最新版のChrome、Safari、Edge、Firefoxをお試しください。',
     replace: '置き換える',
     remove: '削除',
     cancel: 'キャンセル',
@@ -251,10 +261,11 @@ export const ja: Strings = {
     loading: 'エミュレーターを読み込んでいます…',
     notice: '独立したウェブサイトです。Texas Instrumentsとは関係ありません。',
     errors: {
-      empty: 'このファイルは空です。',
-      tooLarge: 'このファイルは電卓のROMにしては大きすぎます。',
-      invalid: 'このファイルはTI-84 Plus CEのROMではありません。',
-      notCE: 'このファイルはTI-84 Plus CEのROMではありません。',
+      empty: 'このファイルは空です。ご自身の電卓のROMを選んでください。',
+      tooSmall: 'このファイルはROMにしては小さすぎます。ROMは約4MBです。',
+      tooLarge: 'このファイルはROMにしては大きすぎます。ROMは約4MBです。',
+      invalid: 'このファイルはTI-84 Plus CEのROMではありません。ご自身の電卓のROMを選んでください。',
+      notCE: 'このファイルはTI-84 Plus CEのROMではありません。ご自身の電卓のROMを選んでください。',
       unavailable: 'エミュレーターを起動できませんでした。ページを再読み込みして、もう一度お試しください。',
       storage: 'ブラウザがROMの保存を許可しませんでした。次回は、もう一度読み込む必要があります。',
       crashed: 'エミュレーターが止まりました。ページを再読み込みして、再開してください。',

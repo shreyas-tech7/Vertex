@@ -30,6 +30,9 @@ export function buildSyntheticRom(): Uint8Array {
   rom.set(header, 0x20000);
   rom.set(inner, 0x20000 + header.length);
   rom.fill(0, 0x20000 + header.length + inner.length, 0x20000 + header.length + length);
+  // A marker in the first bytes, so the file is plainly a test fixture and not a real image: the size and header
+  // preflight rejects an image whose first 4 KiB are all one byte, which is what 4 MiB of erased flash looks like.
+  rom.set([0x00, 0x56, 0x45, 0x52, 0x54, 0x45, 0x58, 0x2d, 0x54, 0x45, 0x53, 0x54], 0);
   return rom;
 }
 

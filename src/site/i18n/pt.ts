@@ -243,6 +243,16 @@ export const pt: Strings = {
     romChoose: 'Escolher arquivo ROM',
     romHint: 'Crie uma ROM da sua própria calculadora com o {link}.',
     romHintLink: 'assistente de extração de ROM do CEmu',
+    romGuideTitle: 'Como obter uma ROM da sua própria calculadora',
+    romGuide:
+      'Conecte sua própria TI-84 Plus CE a um computador, abra o CEmu e use o assistente de extração para gravar um arquivo ROM. Guarde esse arquivo. O Vertex não tem nenhuma ROM e não pode fornecer uma.',
+    installTitle: 'Mantenha sua ROM neste dispositivo',
+    installBody:
+      'O Safari pode apagar os dados de um site que você não abre há um tempo. Adicione o Vertex à tela de início para que ele guarde sua ROM. Toque em Compartilhar e depois em Adicionar à Tela de Início.',
+    installDismiss: 'Entendi',
+    restoring: 'Sua ROM foi restaurada deste navegador.',
+    unsupported:
+      'Este navegador não pode executar a calculadora porque falta um recurso que o emulador precisa. Tente uma versão atual do Chrome, Safari, Edge ou Firefox.',
     replace: 'Substituir',
     remove: 'Remover',
     cancel: 'Cancelar',
@@ -252,10 +262,11 @@ export const pt: Strings = {
     loading: 'Carregando o emulador…',
     notice: 'Site independente. Sem afiliação à Texas Instruments.',
     errors: {
-      empty: 'Esse arquivo está vazio.',
-      tooLarge: 'Esse arquivo é grande demais para ser uma ROM de calculadora.',
-      invalid: 'Esse arquivo não é uma ROM da TI-84 Plus CE.',
-      notCE: 'Esse arquivo não é uma ROM da TI-84 Plus CE.',
+      empty: 'Esse arquivo está vazio. Escolha a ROM da sua calculadora.',
+      tooSmall: 'Esse arquivo é pequeno demais para ser uma ROM. Uma ROM da TI-84 Plus CE tem cerca de 4 MB.',
+      tooLarge: 'Esse arquivo é grande demais para ser uma ROM. Uma ROM da TI-84 Plus CE tem cerca de 4 MB.',
+      invalid: 'Esse arquivo não é uma ROM da TI-84 Plus CE. Escolha a ROM da sua calculadora.',
+      notCE: 'Esse arquivo não é uma ROM da TI-84 Plus CE. Escolha a ROM da sua calculadora.',
       unavailable: 'O emulador não conseguiu iniciar. Recarregue a página e tente de novo.',
       storage: 'Seu navegador não guardou a ROM, então você precisará carregá-la de novo na próxima vez.',
       crashed: 'O emulador parou. Recarregue a página para reiniciá-lo.',
