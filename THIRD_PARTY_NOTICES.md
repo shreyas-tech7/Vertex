@@ -67,21 +67,26 @@ The MIT notice of `hunterchen7/ti84ce` is the usual MIT text under its own copyr
 
 ## Build, test and lint tooling (not shipped)
 
-| Package                                                                   | License    |
-| ------------------------------------------------------------------------- | ---------- |
-| vite, @vitejs/plugin-react, vite-plugin-pwa                               | MIT        |
-| typescript                                                                | Apache-2.0 |
-| vitest                                                                    | MIT        |
-| @playwright/test                                                          | Apache-2.0 |
-| eslint, @eslint/js, typescript-eslint, eslint-plugin-react-hooks, globals | MIT        |
-| prettier                                                                  | MIT        |
-| @types/react, @types/react-dom, @types/node                               | MIT        |
+| Package                                                                   | License    | Notes                                                                                                                                                                                                                                                                                                                               |
+| ------------------------------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| vite, @vitejs/plugin-react, vite-plugin-pwa                               | MIT        |                                                                                                                                                                                                                                                                                                                                     |
+| typescript                                                                | Apache-2.0 |                                                                                                                                                                                                                                                                                                                                     |
+| vitest                                                                    | MIT        |                                                                                                                                                                                                                                                                                                                                     |
+| @playwright/test                                                          | Apache-2.0 |                                                                                                                                                                                                                                                                                                                                     |
+| eslint, @eslint/js, typescript-eslint, eslint-plugin-react-hooks, globals | MIT        |                                                                                                                                                                                                                                                                                                                                     |
+| prettier                                                                  | MIT        |                                                                                                                                                                                                                                                                                                                                     |
+| @types/react, @types/react-dom, @types/node                               | MIT        |                                                                                                                                                                                                                                                                                                                                     |
+| [@sparticuz/chromium](https://github.com/Sparticuz/chromium)              | MIT        | Not a dependency. `scripts/fetch-chromium.mjs` pulls it only when Playwright's download host cannot be reached, to give the end-to-end tests a Chromium. Nothing from it is shipped, and the browser it unpacks lives in the gitignored `.cache/`. The Chromium binary itself carries the Chromium project's own BSD-style licence. |
 
 ## What is not here
 
 - **No calculator ROM, OS image or Texas Instruments software.** Visitors load a ROM from their own calculator. It stays
   in their browser. `.gitignore` blocks `*.rom`, `*.8eu`, `*.8ek` and state files, and `npm run scan` checks the repository,
   the build and the source archive for them.
+- **The "already loaded" feel comes from the visitor's own ROM.** On a return visit the calculator boots the copy the
+  visitor's browser kept, with no click. That copy exists only because they put it there, and Vertex holds no default,
+  demo, bundled or hosted ROM to fall back on. Every test and every measurement uses a synthetic 4 MiB fixture built in
+  memory (`src/test-support/syntheticRom.ts`), which runs no code and is never written to disk.
 - **No Texas Instruments artwork, logo or wordmark.** The calculator drawn in `src/calculator` (key layout and legends
   aside, which TI-OS requires) and every icon and image in `public/` are original. The preview image is a screenshot of
   Vertex itself.
