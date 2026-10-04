@@ -72,7 +72,7 @@ function head(
     (target) => `<link rel="alternate" hreflang="${target}" href="${siteUrl}${pagePath(target, kind)}">`,
   ).join('\n    ');
   return `<meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>${escapeHtml(title)}</title>
     <meta name="description" content="${escapeHtml(description)}">
     <link rel="canonical" href="${siteUrl}${pagePath(lang, kind)}">
@@ -80,6 +80,11 @@ function head(
     <link rel="alternate" hreflang="x-default" href="${siteUrl}${pagePath('en', kind)}">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <!-- Installed on iPhone or iPad, Vertex opens in its own window with no browser chrome. -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="${escapeHtml(APP_NAME)}">
     <meta property="og:title" content="${escapeHtml(title)}">
     <meta property="og:description" content="${escapeHtml(description)}">
     <meta property="og:type" content="website">
