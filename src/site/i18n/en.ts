@@ -242,6 +242,16 @@ export const en: Strings = {
     romChoose: 'Choose ROM file',
     romHint: 'Make a ROM from your own calculator with the {link}.',
     romHintLink: 'ROM dump wizard in CEmu',
+    romGuideTitle: 'How to get a ROM from your own calculator',
+    romGuide:
+      'Connect your own TI-84 Plus CE to a computer, open CEmu, and use its ROM dump wizard to write a ROM file to your disk. Keep that file. Vertex has no ROM and cannot give you one.',
+    installTitle: 'Keep your ROM on this device',
+    installBody:
+      'Safari can clear the storage of a site you have not opened for a while. Add Vertex to your Home Screen so it keeps your ROM. Tap Share, then Add to Home Screen.',
+    installDismiss: 'Got it',
+    restoring: 'Restored your ROM from this browser.',
+    unsupported:
+      'This browser cannot run the calculator because a feature the emulator needs is missing. Try a current version of Chrome, Safari, Edge or Firefox.',
     replace: 'Replace',
     remove: 'Remove',
     cancel: 'Cancel',
@@ -251,10 +261,11 @@ export const en: Strings = {
     loading: 'Loading the emulator…',
     notice: 'Independent website. Not affiliated with Texas Instruments.',
     errors: {
-      empty: 'That file is empty.',
-      tooLarge: 'That file is too big to be a calculator ROM.',
-      invalid: 'That file is not a TI-84 Plus CE ROM.',
-      notCE: 'That file is not a TI-84 Plus CE ROM.',
+      empty: 'That file is empty. Choose the ROM you dumped from your calculator.',
+      tooSmall: 'That file is too small to be a ROM. A TI-84 Plus CE ROM is about 4 MB.',
+      tooLarge: 'That file is too big to be a ROM. A TI-84 Plus CE ROM is about 4 MB.',
+      invalid: 'That file is not a TI-84 Plus CE ROM. Choose the ROM from your calculator.',
+      notCE: 'That file is not a TI-84 Plus CE ROM. Choose the ROM from your calculator.',
       unavailable: 'The emulator could not start. Reload the page and try again.',
       storage: 'Your browser would not store the ROM, so you will need to load it again next time.',
       crashed: 'The emulator stopped. Reload the page to restart it.',

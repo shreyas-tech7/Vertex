@@ -17,11 +17,7 @@
       {
         "element": "top bar",
         "status": "differs",
-        "differences": [
-          "display: block -> flex",
-          "gap: normal -> 16px",
-          "box.height: 74.3 -> 80"
-        ]
+        "differences": ["display: block -> flex", "gap: normal -> 16px", "box.height: 74.3 -> 80"]
       },
       {
         "element": "site name",
@@ -146,10 +142,7 @@
       {
         "element": "footer link",
         "status": "differs",
-        "differences": [
-          "box.x: 949.8 -> 882.4",
-          "box.width: 56.5 -> 40.7"
-        ]
+        "differences": ["box.x: 949.8 -> 882.4", "box.width: 56.5 -> 40.7"]
       },
       {
         "element": "footer line",
@@ -176,11 +169,7 @@
       {
         "element": "top bar",
         "status": "differs",
-        "differences": [
-          "display: block -> flex",
-          "gap: normal -> 16px",
-          "box.height: 59.1 -> 70"
-        ]
+        "differences": ["display: block -> flex", "gap: normal -> 16px", "box.height: 59.1 -> 70"]
       },
       {
         "element": "site name",
@@ -305,10 +294,7 @@
       {
         "element": "footer link",
         "status": "differs",
-        "differences": [
-          "box.x: 47 -> 136.5",
-          "box.width: 56.5 -> 40.7"
-        ]
+        "differences": ["box.x: 47 -> 136.5", "box.width: 56.5 -> 40.7"]
       },
       {
         "element": "footer line",

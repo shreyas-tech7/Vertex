@@ -245,6 +245,16 @@ export const it: Strings = {
     romChoose: 'Scegli file ROM',
     romHint: 'Crea una ROM dalla tua calcolatrice con la {link}.',
     romHintLink: 'procedura guidata di estrazione ROM di CEmu',
+    romGuideTitle: 'Come ottenere una ROM dalla tua calcolatrice',
+    romGuide:
+      'Collega la tua TI-84 Plus CE a un computer, apri CEmu e usa la sua procedura guidata per scrivere un file ROM. Conserva quel file. Vertex non ne ha una e non può dartene una.',
+    installTitle: 'Tieni la ROM su questo dispositivo',
+    installBody:
+      'Safari può cancellare i dati di un sito che non apri da un po’. Aggiungi Vertex alla schermata Home, così conserva la tua ROM. Tocca Condividi, poi Aggiungi a Home.',
+    installDismiss: 'Ho capito',
+    restoring: 'ROM ripristinata da questo browser.',
+    unsupported:
+      'Questo browser non può avviare la calcolatrice perché manca una funzione necessaria all’emulatore. Prova una versione recente di Chrome, Safari, Edge o Firefox.',
     replace: 'Sostituisci',
     remove: 'Rimuovi',
     cancel: 'Annulla',
@@ -254,10 +264,11 @@ export const it: Strings = {
     loading: 'Caricamento dell’emulatore…',
     notice: 'Sito indipendente. Non affiliato a Texas Instruments.',
     errors: {
-      empty: 'Questo file è vuoto.',
-      tooLarge: 'Questo file è troppo grande per essere una ROM di calcolatrice.',
-      invalid: 'Questo file non è una ROM TI-84 Plus CE.',
-      notCE: 'Questo file non è una ROM TI-84 Plus CE.',
+      empty: 'Questo file è vuoto. Scegli la ROM della tua calcolatrice.',
+      tooSmall: 'Questo file è troppo piccolo per essere una ROM. Una ROM TI-84 Plus CE è di circa 4 MB.',
+      tooLarge: 'Questo file è troppo grande per essere una ROM. Una ROM TI-84 Plus CE è di circa 4 MB.',
+      invalid: 'Questo file non è una ROM TI-84 Plus CE. Scegli la ROM della tua calcolatrice.',
+      notCE: 'Questo file non è una ROM TI-84 Plus CE. Scegli la ROM della tua calcolatrice.',
       unavailable: 'L’emulatore non è partito. Ricarica la pagina e riprova.',
       storage: 'Il tuo browser non ha salvato la ROM, quindi dovrai caricarla di nuovo la prossima volta.',
       crashed: 'L’emulatore si è fermato. Ricarica la pagina per riavviarlo.',

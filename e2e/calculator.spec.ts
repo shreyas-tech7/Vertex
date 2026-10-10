@@ -5,6 +5,7 @@ import { buildSyntheticRom } from '../src/test-support/syntheticRom.ts';
 import {
   MATRIX_EMPTY,
   ROM_ARGS,
+  shownZoom,
   expect,
   expectMatrix,
   keyPoint,
@@ -25,15 +26,23 @@ test.describe('ROM panel', () => {
     await expect(panel.getByRole('heading', { name: 'Load your TI-84 Plus CE ROM' })).toBeVisible();
     await expect(panel.getByRole('button', { name: 'Choose ROM file' })).toBeVisible();
     await expect(panel.locator('.rom-drop')).toContainText('Drop your ROM file here');
-    const link = panel.getByRole('link', { name: 'ROM dump wizard in CEmu' });
+    // The legal guide is one step away, inside a collapsed disclosure, so the panel keeps fitting the LCD.
+    const guide = panel.locator('.rom-guide');
+    await expect(guide).toContainText('How to get a ROM from your own calculator');
+    await guide.locator('summary').click();
+    const link = guide.getByRole('link', { name: 'ROM dump wizard in CEmu' });
     await expect(link).toHaveAttribute('href', 'https://ce-programming.github.io/CEmu/');
+    await expect(guide).toContainText('Connect your own TI-84 Plus CE');
+    await guide.locator('summary').click();
     // The panel sits exactly over the LCD, which is 232 x 174 (the 320 x 240 screen at 0.725).
     const screen = (await page.locator('.screen').boundingBox())!;
     const box = (await panel.boundingBox())!;
     expect(Math.abs(box.width - screen.width)).toBeLessThan(1);
     expect(Math.abs(box.height - screen.height)).toBeLessThan(1);
-    expect(screen.width).toBeCloseTo(232, 0);
-    expect(screen.height).toBeCloseTo(174, 0);
+    // 232 x 174 at 100%. A touch profile starts at 130%, so the shown size is that times the zoom.
+    const zoom = (await shownZoom(page)) / 100;
+    expect(screen.width).toBeCloseTo(232 * zoom, 0);
+    expect(screen.height).toBeCloseTo(174 * zoom, 0);
     // The Change ROM link only appears once a ROM is loaded.
     await expect(page.getByRole('button', { name: 'Change ROM' })).toBeHidden();
   });
@@ -43,7 +52,9 @@ test.describe('ROM panel', () => {
     await page
       .getByTestId('rom-input')
       .setInputFiles({ ...ROM_ARGS, name: 'notes.rom', buffer: Buffer.from('this is not a calculator ROM') });
-    await expect(page.locator('.rom-error')).toHaveText('That file is not a TI-84 Plus CE ROM.');
+    await expect(page.locator('.rom-error')).toHaveText(
+      'That file is too small to be a ROM. A TI-84 Plus CE ROM is about 4 MB.',
+    );
     await expect(page.locator('.rom-panel')).toBeVisible();
     await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'needRom');
   });
@@ -51,9 +62,21 @@ test.describe('ROM panel', () => {
   test('rejects an empty file and a 4 MB file of zeros', async ({ page }) => {
     await openCalculator(page);
     await page.getByTestId('rom-input').setInputFiles({ ...ROM_ARGS, buffer: Buffer.alloc(0) });
-    await expect(page.locator('.rom-error')).toHaveText('That file is empty.');
+    await expect(page.locator('.rom-error')).toHaveText(
+      'That file is empty. Choose the ROM you dumped from your calculator.',
+    );
     await page.getByTestId('rom-input').setInputFiles({ ...ROM_ARGS, buffer: Buffer.alloc(0x400000) });
-    await expect(page.locator('.rom-error')).toHaveText('That file is not a TI-84 Plus CE ROM.');
+    await expect(page.locator('.rom-error')).toHaveText(
+      'That file is not a TI-84 Plus CE ROM. Choose the ROM from your calculator.',
+    );
+  });
+
+  test('rejects a file that is far too big before the emulator ever sees it', async ({ page }) => {
+    await openCalculator(page);
+    await page.getByTestId('rom-input').setInputFiles({ ...ROM_ARGS, buffer: Buffer.alloc(0x2000001) });
+    await expect(page.locator('.rom-error')).toHaveText(
+      'That file is too big to be a ROM. A TI-84 Plus CE ROM is about 4 MB.',
+    );
   });
 
   test('accepts a file CEmu validates, stores it in IndexedDB and shows the calculator', async ({ page }) => {
@@ -216,7 +239,9 @@ test.describe('ROM panel', () => {
     await page
       .getByTestId('rom-input')
       .setInputFiles({ ...ROM_ARGS, name: 'bad.rom', buffer: Buffer.from('nope') });
-    await expect(page.locator('.rom-error')).toHaveText('That file is not a TI-84 Plus CE ROM.');
+    await expect(page.locator('.rom-error')).toHaveText(
+      'That file is too small to be a ROM. A TI-84 Plus CE ROM is about 4 MB.',
+    );
     await page.getByRole('button', { name: 'Cancel' }).click();
     await page
       .locator('[data-key="ENTER"]')
@@ -427,9 +452,11 @@ test.describe('screen', () => {
     await expect(canvas).toHaveJSProperty('width', 320);
     await expect(canvas).toHaveJSProperty('height', 240);
     const box = (await canvas.boundingBox())!;
-    expect(box.width).toBeCloseTo(232, 0);
-    expect(box.height).toBeCloseTo(174, 0);
-    expect(box.width / 320).toBeCloseTo(0.725, 3);
+    // 232 x 174 at 100%, and the same shape at any other zoom.
+    const zoom = (await shownZoom(page)) / 100;
+    expect(box.width).toBeCloseTo(232 * zoom, 0);
+    expect(box.height).toBeCloseTo(174 * zoom, 0);
+    expect(box.width / 320).toBeCloseTo(0.725 * zoom, 3);
     // Smooth scaling: never the nearest-neighbour keywords.
     expect(await canvas.evaluate((el) => getComputedStyle(el).imageRendering)).toBe('auto');
   });
@@ -453,6 +480,13 @@ test.describe('screen', () => {
 test.describe('zoom', () => {
   // A wide window, so the cap for narrow screens never binds here. The cap has its own tests.
   test.use({ viewport: { width: 1280, height: 900 } });
+  // A touch profile starts bigger than 100% on a first visit. These tests pin 100%, but only until the page
+  // itself saves a level, so reloading still proves the choice is remembered.
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      if (localStorage.getItem('vertex_zoom_level') === null) localStorage.setItem('vertex_zoom_level', '1');
+    });
+  });
 
   test('runs 50% to 200% in 10% steps, scales from the top centre with a 0.3s ease, and remembers the level', async ({
     page,

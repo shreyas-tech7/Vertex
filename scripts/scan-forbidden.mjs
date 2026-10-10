@@ -18,7 +18,17 @@ const hostPatterns = [
   new RegExp(['https?://[^\\s"\'<>]*\\b', 'ti\\.com'].join(''), 'i'),
   new RegExp(['pear', 'son(?:\\.com|education|assessments)'].join(''), 'i'),
 ];
-const forbiddenExtensions = new Set(['.rom', '.8eu', '.8ek', ['.h84', 'statej'].join(''), '.8xu', '.8cu']);
+const forbiddenExtensions = new Set([
+  '.rom',
+  '.8eu',
+  '.8ek',
+  ['.h84', 'statej'].join(''),
+  '.8xu',
+  '.8cu',
+  // A ROM renamed to look like something else is still a ROM. These two are refused wherever they appear.
+  '.bin',
+  '.img',
+]);
 const artName =
   /(faceplate|ti-?84-?(plus-?)?ce-?(touch|photo|render)|texas-?instruments.*\.(png|jpe?g|svg|webp)|\bti-?logo)/i;
 
@@ -52,12 +62,27 @@ function looksLikeText(buffer) {
   return !sample.includes(0);
 }
 
+/** Compressed or already-known binary formats: their bytes are noise, so the ROM-shape check would only misfire. */
+const COMPRESSED = new Set([
+  '.gz',
+  '.tgz',
+  '.br',
+  '.zip',
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.webp',
+  '.woff',
+  '.woff2',
+  '.wasm',
+]);
+
 function inspectFile(path, label) {
   const size = statSync(path).size;
   const extension = path.slice(path.lastIndexOf('.')).toLowerCase();
   if (forbiddenExtensions.has(extension)) note(label, `forbidden file type ${extension}`);
   if (artName.test(path)) note(label, 'file name looks like calculator artwork');
-  if (size >= 3 * 1024 * 1024 && size <= 0x2000000) {
+  if (size >= 1024 * 1024 && size <= 0x2000000 && !COMPRESSED.has(extension)) {
     // A TI-84 Plus CE ROM has its certificate field (0x800F) at offset 0x20000 of a 4 MB image.
     const fd = readFileSync(path).subarray(0x20000, 0x20002);
     if (fd.length === 2 && fd[0] === 0x80 && fd[1] === 0x0f)

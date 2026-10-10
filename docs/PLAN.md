@@ -44,3 +44,17 @@ The original from-scratch plan (milestones M1 to M8 in `docs/SPEC.md`) is replac
 - [x] Zoom, reload, iframe resize; ROM panel; storage
 - [~] Zero console errors in Chromium, Firefox and WebKit (see STATUS.md)
 - [x] No third-party requests; scan for ROMs, OS images, TI art and TI hosts
+
+## R3 Startup: the calculator is already there
+
+- [x] The visitor's ROM is restored from IndexedDB and booted with no click, and the ROM panel never opens on that path
+- [x] ROM and state stored as `ArrayBuffer`, `navigator.storage.persist()` after every import, one plain sentence on failure
+- [x] The worker starts before React renders, the wasm is preloaded, and it compiles with streaming plus an ArrayBuffer fallback
+- [x] A fast size and header preflight before CEmu sees the file
+- [x] One-time Add to Home Screen hint on iPhone and iPad Safari, with the dismissal remembered
+- [x] Touch and iPad work: pointer events, no stuck keys, 100dvh, safe-area insets, Apple meta tags, 44 px targets
+- [x] Playwright projects for Chromium, the phone profile, WebKit desktop, WebKit iPad and WebKit iPhone
+- [x] Cold and warm load measured, and the ROM and network scans hardened
+- [~] Cold and warm load measured on localhost only, with the synthetic ROM (see STATUS.md)
+- [ ] Safari, iPad Safari, iPhone Safari and Firefox (no binary in this sandbox, see STATUS.md)
+- [ ] Real TI-OS behaviour (needs a ROM from the owner's own calculator, see the handoff prompt in the report)

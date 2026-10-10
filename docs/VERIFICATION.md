@@ -1,21 +1,169 @@
-# Verification (branch `ti84-redesign`)
+# Verification (round R3 on `arena/01a10503-vertex`)
 
 What was run, how to repeat it, and what came out. Nothing here ran a real TI-OS ROM. No ROM was or may be obtained.
 See `docs/STATUS.md` for what that leaves unverified.
 
-| Check                                                    | Result                                                      | Repeat with                                                                   |
-| -------------------------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Typecheck, lint, 389 unit tests (1 skipped), build, scan | pass                                                        | `npm run check`                                                               |
-| 210 browser tests: 201 pass, 9 skipped on purpose        | pass (Chromium 105, phone 96, 9 desktop-only tests skipped) | `npm run test:e2e`                                                            |
-| Zero requests to any other origin                        | pass                                                        | `node scripts/network-log.mjs`                                                |
-| No ROM, OS image, TI art or TI host anywhere             | pass                                                        | `npm run scan`                                                                |
-| Layout targets at 1920x855 and 390x844                   | 36 of 41 match, 5 do not (listed in F9)                     | `node scripts/measure-targets.mjs`                                            |
-| Computed styles against the reference page               | **not run in this round** (reference file missing, see F1)  | `REF_DIR=<MIT repo checkout> node scripts/compare-reference.mjs`              |
-| Firefox and WebKit                                       | **not run** (no binary here, see F5)                        | `scripts/browser-check.mjs firefox <binary>`, `... webkit <MiniBrowser>`      |
-| Source archive rebuilds the same WebAssembly             | not re-run (emulator unchanged since the last round)        | unpack `public/source/vertex-emulator-source.tar.gz`, run `emulator/build.sh` |
+The R3 sections below are this round. Sections F1 to F11 were recorded on `ti84-redesign` in round R2 and were not
+re-measured, except where a section says otherwise.
 
-Run on 2026-10-02 against the commit that carries this file. The browser was Chromium 1194 from `/opt/pw-browsers`
-(`VERTEX_CHROMIUM_PATH`). Playwright's own headless Chromium hides scrollbars, so no 15 px scrollbar was in play.
+| Check                                                           | Result                                                                 | Repeat with                                                                                               |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Typecheck, lint, 429 unit tests (1 skipped), build, ROM scan    | pass                                                                   | `npm run check`                                                                                           |
+| 260 browser tests: 250 pass, 10 skipped on purpose, 0 fail      | pass in 2.9 minutes (Chromium 129 plus 1 skip, phone 121 plus 9 skips) | `VERTEX_CHROMIUM_PATH=.cache/chromium/chromium.sh npx playwright test --project=chromium --project=phone` |
+| Cold and warm startup, 5 runs each, medians                     | cold 218 ms, warm 156 ms to a usable calculator                        | `node scripts/measure-startup.mjs`                                                                        |
+| Zero requests to any other origin, none to a TI or Pearson host | pass                                                                   | `node scripts/network-log.mjs`                                                                            |
+| No ROM, OS image, TI art or TI host anywhere                    | pass (146 repository files, 51 build files, 400 archive entries)       | `npm run scan`                                                                                            |
+| Safari, iPad Safari, iPhone Safari, Firefox                     | **NOT CHECKED** (no binary here, see R3.3)                             | `npx playwright install webkit` on a machine that can reach the CDN                                       |
+| Layout targets at 1920x855 and 390x844                          | 36 of 41 match (round R2 numbers, see F9)                              | `node scripts/measure-targets.mjs`                                                                        |
+| Computed styles against the reference page                      | **not run** (reference file missing, see F1)                           | `REF_DIR=<MIT repo checkout> node scripts/compare-reference.mjs`                                          |
+| Source archive rebuilds the same WebAssembly                    | not re-run (emulator unchanged since the last round)                   | unpack `public/source/vertex-emulator-source.tar.gz`, run `emulator/build.sh`                             |
+
+Run on 2026-10-04 against the commit that carries this file. The browser was Chromium 153 pulled from the npm registry
+by `scripts/fetch-chromium.mjs` and used through `VERTEX_CHROMIUM_PATH=.cache/chromium/chromium.sh`, headless, on
+Linux. Playwright's own headless Chromium hides scrollbars, so no 15 px scrollbar was in play.
+
+## R3.1 The startup path, step by step
+
+1. `calculator.html` loads. It carries `rel=preload as=fetch` for `vertex-cemu.wasm` and `rel=modulepreload` for the
+   worker and the small zoom chunk.
+2. `main.tsx` registers the service worker and starts the emulator worker **before** React renders, so the WebAssembly
+   compile overlaps with the first paint.
+3. The page compiles the module with `WebAssembly.compileStreaming` when the host sends `application/wasm`, and falls
+   back to fetching an `ArrayBuffer` and calling `WebAssembly.compile` when it does not. The compiled module is posted
+   to the worker, which instantiates it. If the page cannot compile at all, the worker compiles for itself.
+4. React paints the case, the keypad, the zoom controls and the LCD in one frame. The LCD shows a spinner and one line
+   of text. `data-phase` is `starting`.
+5. `useCalculator` reads the ROM and the saved state from IndexedDB in one `Promise.all`, preflights the ROM, and boots
+   it. `data-phase` becomes `running`.
+6. No click happened. If there is no ROM, `data-phase` becomes `needRom` and the ROM panel opens in the LCD.
+
+**The ROM only ever comes from the visitor.** The page has no default ROM, no demo ROM and no bundled ROM. Every test
+and every measurement below uses the synthetic fixture built in memory by `src/test-support/syntheticRom.ts`, which is
+4 MiB of 0xFF with the certificate fields CEmu reads and which runs no code.
+
+## R3.2 Browser and device matrix
+
+Every PASS row was run here, on this branch, with the commands listed. NOT CHECKED means it was not run at all.
+
+| Browser and device                                      | Result      | Evidence                                                                     |
+| ------------------------------------------------------- | ----------- | ---------------------------------------------------------------------------- |
+| Chromium 153 headless, Linux, desktop 1280x900          | PASS        | 129 browser tests pass, 1 skipped (the touch-only 44 px check)               |
+| Chromium 153 headless, phone profile 390x844 with touch | PASS        | 121 browser tests pass, 9 skipped (the 1920 px language checks)              |
+| Chromium at iPad portrait 810x1080                      | PASS        | case keeps its 258x604 shape, 50 keys inside it, no horizontal scroll        |
+| Chromium at iPad landscape 1080x810                     | PASS        | same test                                                                    |
+| Chromium at iPad Split View 507x810                     | PASS        | same test                                                                    |
+| Chromium at iPad Slide Over 320x810                     | PASS        | same test, zoom capped at 124%                                               |
+| Chromium with the network switched off, second load     | PASS        | service worker test: boots to `running` with `context.setOffline(true)`      |
+| Hardware keyboard                                       | PASS        | 44 shortcuts in `emulator.test.ts`, and `page.keyboard` in the browser suite |
+| Touch key input, slide-off, blur lifts keys             | PASS        | 3 touch tests in the phone profile                                           |
+| 44 px key targets on a touch screen                     | PASS        | 1 test, phone profile only                                                   |
+| No SharedArrayBuffer, no COOP or COEP headers needed    | PASS        | CEmu is built without pthreads, and the site sets neither header             |
+| Streaming WebAssembly compile                           | PASS        | Chromium takes the `compileStreaming` path in the tests                      |
+| `100dvh`, safe-area insets, Apple meta tags             | PASS        | computed style test, plus the four meta tags in all 27 generated pages       |
+| Safari on macOS                                         | NOT CHECKED | no WebKit binary can be downloaded into this sandbox                         |
+| Safari on iPadOS                                        | NOT CHECKED | same                                                                         |
+| Safari on iOS                                           | NOT CHECKED | same                                                                         |
+| Add to Home Screen on a real iPhone or iPad             | NOT CHECKED | needs a device                                                               |
+| Firefox                                                 | NOT CHECKED | no binary here                                                               |
+| OffscreenCanvas path                                    | NOT CHECKED | the feature is detected and left unused, `putImageData` paints everywhere    |
+| Whether GitHub Pages sends `application/wasm`           | NOT CHECKED | the `ArrayBuffer` fallback covers either answer                              |
+
+Why WebKit is missing: Playwright's CDN, the Debian and Ubuntu mirrors, storage.googleapis.com and every other browser
+host tried are unreachable from this sandbox. The npm registry answers, and it carries a Chromium build, which is what
+`scripts/fetch-chromium.mjs` uses. The `webkit`, `webkit-ipad` and `webkit-iphone` projects are written and configured
+(iPad at 810x1080 with touch, iPhone at 390x844 with touch) and skip themselves with a printed warning, so the day a
+WebKit binary is available the matrix fills in with one command.
+
+## R3.3 Cold and warm load
+
+Measured with `node scripts/measure-startup.mjs` against `npx vite preview` on `http://localhost:4173`, 5 runs each,
+medians, Chromium 153 headless, viewport 1280x900, `--no-sandbox --disable-gpu`, and the synthetic 4 MiB ROM seeded
+into IndexedDB exactly as a previous visit would have left it. "Usable" is the moment `data-phase` becomes `running`:
+the ROM has been found, CEmu has booted it, and the frame loop is going.
+
+| Measurement                                        | Cold (a fresh context every run) | Warm (one context reused) |
+| -------------------------------------------------- | -------------------------------- | ------------------------- |
+| Time to a usable calculator                        | 218 ms (min 206, max 242)        | 156 ms (min 154, max 224) |
+| Time to the calculator frame painted               | 101 ms                           | 80 ms                     |
+| Time to `DOMContentLoaded`                         | 80 ms                            | 67 ms                     |
+| Measured from outside the browser, `goto` to ready | 296 ms                           | 249 ms                    |
+| Service worker in control                          | no                               | yes                       |
+
+Two honest notes on the warm column. The first of the five warm runs happens before the service worker takes control,
+so it is really a second cold-ish load, and the script waits for `navigator.serviceWorker.ready` only after it. The
+other four are the load a returning visitor gets. And the warm path is not a shortcut: it seeds the ROM into IndexedDB
+and lets the page find it there, the same way a real return visit does.
+
+The preload links were A/B tested in an earlier run of the same script on this branch. Removing all three moved the
+cold median from 229 to 231 ms and the warm median from 153 to 161 ms. On localhost everything is one origin over a
+local socket, so the preloads cannot win there. They were kept for real networks, where the wasm is a second round
+trip.
+
+## R3.4 The 16 required startup checks
+
+Each row is a test in `e2e/startup.spec.ts`, run in both the Chromium and the phone profile unless the row says
+otherwise.
+
+| #   | Required check                                    | Test                                                                                  | Result |
+| --- | ------------------------------------------------- | ------------------------------------------------------------------------------------- | ------ |
+| 1   | First run with no ROM                             | `shows the calculator frame at once, with one ROM step and no other setup`            | PASS   |
+| 2   | The iPad picker accepts any file                  | `the file picker accepts any file, so iOS does not refuse the extension`              | PASS   |
+| 3   | Synthetic invalid ROM import                      | four bad files, each `is refused with one plain sentence and no dead screen`          | PASS   |
+| 4   | A good fixture is not rejected by mistake         | `the synthetic fixture is accepted, so the checks reject bad files and not good ones` | PASS   |
+| 5   | Auto detection at startup                         | `boots on its own from a ROM already in IndexedDB, with no click and no ROM screen`   | PASS   |
+| 6   | Warm boot with zero setup clicks                  | the same test: it asserts `data-phase` is `running` and no ROM panel appears          | PASS   |
+| 7   | Saved state restoration                           | `restores the saved state as well, and says the ROM came from this browser`           | PASS   |
+| 8   | IndexedDB persistence across reload and a new tab | `keeps the ROM in IndexedDB as an ArrayBuffer, and survives a reload and a new tab`   | PASS   |
+| 9   | `navigator.storage.persist()` is wired            | `asks the browser to keep the storage after a successful import`                      | PASS   |
+| 10  | Service worker takeover                           | `takes over, and the second load works with the network switched off`                 | PASS   |
+| 11  | Offline asset loading                             | the same test, after `context.setOffline(true)`                                       | PASS   |
+| 12  | iPad portrait                                     | `iPad portrait (810 x 1080) keeps the case whole inside the frame`                    | PASS   |
+| 13  | iPad landscape                                    | `iPad landscape (1080 x 810) keeps the case whole inside the frame`                   | PASS   |
+| 14  | Phone width                                       | `phone width (390 x 844) keeps the case whole inside the frame`                       | PASS   |
+| 15  | Touch key input                                   | `a tap presses a key and lifts it`, plus the slide-off and blur tests                 | PASS   |
+| 16  | ROM exclusion scan in the served build            | `the served build holds no ROM, OS image or TI asset`                                 | PASS   |
+
+The stored-fixture path is the point of rows 5 and 6, and the tests assert it directly: with a ROM seeded in IndexedDB
+the page reaches `data-phase="running"`, the ROM panel is never in the DOM, and `data-boot` says the ROM came from
+storage. The import screen is not reachable on that path.
+
+## R3.5 Unit tests added this round
+
+429 unit tests run in 12 files, 428 pass and 1 is skipped. This round added four suites:
+
+| Suite                                 | Tests | What it covers                                                                                           |
+| ------------------------------------- | ----- | -------------------------------------------------------------------------------------------------------- |
+| `src/calculator/romCheck.test.ts`     | 8     | The size and header preflight: empty, too small, too large, erased flash, wiped file, real-looking image |
+| `src/calculator/features.test.ts`     | 8     | Feature detection, the required four, iOS-like detection, standalone mode                                |
+| `src/site/romExclusion.test.ts`       | 3     | Runs `scan-forbidden.mjs` clean, and fails it with a planted ROM and a planted `.rom`                    |
+| `src/calculator/pointerInput.test.ts` | 8     | Pointer and mouse key press and lift, slide-off, `pointercancel`, release by the last holder             |
+
+`src/calculator/storage.test.ts` gained 6 tests for `persistBrowserStorage` and 2 for the stored ROM record, and
+`src/calculator/zoom.test.ts` gained 5 for the touch default zoom of 130%.
+
+## R3.6 Forbidden content and network
+
+```
+scanned 146 repository files, 51 build files, 400 archive entries
+checked for: ROM and OS files (.rom .8eu .8ek .h84statej .8xu .8cu .bin .img), ROM-shaped binaries, TI artwork names, and references to the proprietary emulator hosts
+clean: no ROM files, no OS images, no TI art, no references to TI or Pearson emulator hosts
+```
+
+The scan now also refuses `.bin` and `.img`, flags ROM-shaped binaries from 1 MiB instead of 3 MiB, and skips
+compressed and known binary formats so the served source archive never misfires. `src/site/romExclusion.test.ts` runs
+it and plants a decoy to prove it still catches one.
+
+`node scripts/network-log.mjs` walks every page, loads a ROM, presses a key and reloads. It ends with
+`no request left the site's own origin` and `no request went to a Texas Instruments or Pearson host`. It now fails on
+an education.ti.com or pearson.com request too, not only on a request that leaves the origin.
+
+## R3.7 What this round did not check
+
+- Safari, iPad Safari, iPhone Safari and Firefox, on any operating system.
+- A real ROM, at any point. Every number here is the synthetic fixture.
+- Cold and warm load over a real network, and on a phone.
+- Add to Home Screen, and whether iOS keeps a ROM in IndexedDB across a browser restart.
+- `compare-reference.mjs`, which needs the MIT reference repository's `index.html` on disk.
 
 ## F1. Screenshots and comparison
 

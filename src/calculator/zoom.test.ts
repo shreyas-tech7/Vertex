@@ -1,10 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  TOUCH_DEFAULT_ZOOM,
+  ZOOM_DEFAULT,
   ZOOM_MAX,
   ZOOM_MIN,
   ZOOM_STORAGE_KEY,
   acceptHeightMessage,
   clampZoom,
+  defaultZoom,
   effectiveZoom,
   frameHeight,
   notifyParentHeight,
@@ -182,5 +185,33 @@ describe('height messages', () => {
     );
     expect(acceptHeightMessage({ ...good, data: { type: 'updateHeight', height: 5 } }, options)).toBe(200);
     expect(acceptHeightMessage(good, { origin: 'https://vertex.example', frame: null })).toBeNull();
+  });
+});
+
+describe('the zoom a first visit starts at', () => {
+  it('starts a touch screen at 130%, so every key target is at least 44 px', () => {
+    expect(defaultZoom(null, true)).toBe(TOUCH_DEFAULT_ZOOM);
+    expect(TOUCH_DEFAULT_ZOOM).toBeGreaterThanOrEqual(44 / 34);
+  });
+
+  it('starts a mouse at 100%', () => {
+    expect(defaultZoom(null, false)).toBe(ZOOM_DEFAULT);
+  });
+
+  it('gives the visitor their own level back, higher or lower than the touch default', () => {
+    expect(defaultZoom('0.5', true)).toBe(0.5);
+    expect(defaultZoom('2', true)).toBe(2);
+    expect(defaultZoom('1.2', false)).toBe(1.2);
+  });
+
+  it('clamps a level a hand or another build might have written', () => {
+    expect(defaultZoom('9', true)).toBe(ZOOM_MAX);
+    expect(defaultZoom('not a number', true)).toBe(ZOOM_DEFAULT);
+  });
+
+  it('holds the touch default at the frame cap, so the case never leaves its frame', () => {
+    // 258 x 1.3 is 335.4, which does not fit a 320 px Slide Over column: the cap wins.
+    expect(effectiveZoom(TOUCH_DEFAULT_ZOOM, 320, 258)).toBeCloseTo(1.24, 2);
+    expect(effectiveZoom(TOUCH_DEFAULT_ZOOM, 810, 258)).toBe(TOUCH_DEFAULT_ZOOM);
   });
 });

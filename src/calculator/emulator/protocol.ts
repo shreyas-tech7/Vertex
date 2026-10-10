@@ -5,7 +5,7 @@ export const LCD_HEIGHT = 240;
 export const FRAME_BYTES = LCD_WIDTH * LCD_HEIGHT * 4;
 
 /** Why a ROM was refused. `unavailable` means the emulator itself could not run. */
-export type RomRejection = 'empty' | 'tooLarge' | 'invalid' | 'notCE' | 'unavailable';
+export type RomRejection = 'empty' | 'tooSmall' | 'tooLarge' | 'invalid' | 'notCE' | 'unavailable';
 export type RomCheck = { ok: true } | { ok: false; reason: RomRejection };
 
 export type BootSource = 'state' | 'rom';
@@ -18,7 +18,8 @@ export const STATUS_LCD_ON = 1;
 export const STATUS_POWERED_OFF = 2;
 
 export type ToWorker =
-  | { type: 'init' }
+  /** Starts the emulator. `module` is the compiled WebAssembly, when the page could compile it itself. */
+  | { type: 'init'; module?: WebAssembly.Module }
   | { type: 'validate'; id: number; rom: ArrayBuffer }
   | { type: 'boot'; id: number; rom?: ArrayBuffer; state?: ArrayBuffer }
   | { type: 'pause' }

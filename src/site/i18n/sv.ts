@@ -243,6 +243,16 @@ export const sv: Strings = {
     romChoose: 'Välj ROM-fil',
     romHint: 'Skapa en ROM från din egen räknare med {link}.',
     romHintLink: 'ROM-dumpguiden i CEmu',
+    romGuideTitle: 'Så får du en ROM från din egen räknare',
+    romGuide:
+      'Anslut din egen TI-84 Plus CE till en dator, öppna CEmu och skriv en ROM-fil med dess dumpguide. Spara den filen. Vertex har ingen ROM och kan inte ge dig en.',
+    installTitle: 'Behåll din ROM på den här enheten',
+    installBody:
+      'Safari kan rensa lagringen för en webbplats du inte har öppnat på ett tag. Lägg till Vertex på hemskärmen så behåller den din ROM. Tryck på Dela och sedan Lägg till på hemskärmen.',
+    installDismiss: 'Uppfattat',
+    restoring: 'Din ROM återställdes från den här webbläsaren.',
+    unsupported:
+      'Den här webbläsaren kan inte köra räknaren eftersom en funktion som emulatorn behöver saknas. Prova en aktuell version av Chrome, Safari, Edge eller Firefox.',
     replace: 'Ersätt',
     remove: 'Ta bort',
     cancel: 'Avbryt',
@@ -252,10 +262,11 @@ export const sv: Strings = {
     loading: 'Laddar emulatorn…',
     notice: 'Oberoende webbplats. Ingen koppling till Texas Instruments.',
     errors: {
-      empty: 'Filen är tom.',
-      tooLarge: 'Filen är för stor för att vara en räknar-ROM.',
-      invalid: 'Filen är ingen TI-84 Plus CE-ROM.',
-      notCE: 'Filen är ingen TI-84 Plus CE-ROM.',
+      empty: 'Filen är tom. Välj ROM:en från din räknare.',
+      tooSmall: 'Filen är för liten för att vara en ROM. En TI-84 Plus CE-ROM är omkring 4 MB.',
+      tooLarge: 'Filen är för stor för att vara en ROM. En TI-84 Plus CE-ROM är omkring 4 MB.',
+      invalid: 'Filen är ingen TI-84 Plus CE-ROM. Välj ROM:en från din räknare.',
+      notCE: 'Filen är ingen TI-84 Plus CE-ROM. Välj ROM:en från din räknare.',
       unavailable: 'Emulatorn kunde inte starta. Ladda om sidan och försök igen.',
       storage: 'Din webbläsare sparade inte ROM, så du måste ladda den igen nästa gång.',
       crashed: 'Emulatorn stannade. Ladda om sidan för att starta den igen.',

@@ -22,3 +22,5 @@ screenshots
 emulator/.cache
 !emulator/dist
 !docs/screenshots
+# Browser downloaded for the end-to-end tests (scripts/fetch-chromium.mjs)
+.cache/chromium

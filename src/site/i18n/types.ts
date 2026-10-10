@@ -59,6 +59,17 @@ export interface CalcStrings {
   romChoose: string;
   romHint: string;
   romHintLink: string;
+  /** Heading of the collapsed "how to get a ROM" guide under the drop zone. */
+  romGuideTitle: string;
+  /** The guide itself: how a visitor makes a ROM from a calculator they own. */
+  romGuide: string;
+  installTitle: string;
+  installBody: string;
+  installDismiss: string;
+  /** Shown when the stored ROM is found and the calculator boots without a click. */
+  restoring: string;
+  /** Shown instead of a blank page when the browser cannot run the emulator at all. */
+  unsupported: string;
   replace: string;
   remove: string;
   cancel: string;
@@ -69,6 +80,7 @@ export interface CalcStrings {
   notice: string;
   errors: {
     empty: string;
+    tooSmall: string;
     tooLarge: string;
     invalid: string;
     notCE: string;

@@ -1,3 +1,4 @@
+import wasmUrl from '../../../emulator/dist/vertex-cemu.wasm?url';
 import {
   LCD_HEIGHT,
   LCD_WIDTH,
@@ -7,6 +8,7 @@ import {
   type SendResult,
   type ToWorker,
 } from './protocol.ts';
+import { compileWasm } from './wasm.ts';
 
 export interface EmulatorEvents {
   /** A new LCD frame, as 320 x 240 RGBA. Only sent when the picture changed. */
@@ -28,13 +30,42 @@ export class EmulatorClient {
   private readonly ready: Promise<boolean>;
   events: EmulatorEvents = {};
 
-  constructor(worker?: Worker) {
-    this.worker = worker ?? new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
+  constructor(worker?: Worker | null) {
+    // A worker of `null` is the stand-in for a browser that could not start one: this client never becomes ready,
+    // which the page turns into one honest message.
+    this.worker =
+      worker === null
+        ? ({} as Worker)
+        : (worker ?? new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' }));
     this.ready = new Promise<boolean>((resolve) => {
       this.onReady = resolve;
     });
+    if (worker === null) {
+      this.onReady?.(false);
+      return;
+    }
     this.worker.onmessage = (event: MessageEvent<FromWorker>) => this.handle(event.data);
     this.worker.onerror = () => this.onReady?.(false);
+    // The page fetches and compiles the WebAssembly itself, because the `<link rel="preload">` in the HTML starts
+    // that download before the worker has even loaded. The worker compiles it when this thread cannot.
+    void this.startWithWasm();
+  }
+
+  private async startWithWasm(): Promise<void> {
+    let module: WebAssembly.Module | undefined;
+    try {
+      module = await compileWasm(wasmUrl);
+    } catch {
+      module = undefined;
+    }
+    if (module) {
+      try {
+        this.post({ type: 'init', module });
+        return;
+      } catch {
+        /* this browser cannot hand a compiled module to a worker: let the worker compile it */
+      }
+    }
     this.post({ type: 'init' });
   }
 
@@ -140,6 +171,7 @@ export class EmulatorClient {
   }
 
   dispose(): void {
+    if (!this.worker.terminate) return;
     this.post({ type: 'shutdown' });
     this.worker.terminate();
   }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CalculatorStorage, memoryBackend } from './storage.ts';
+import { CalculatorStorage, memoryBackend, persistBrowserStorage } from './storage.ts';
 
 const bytes = (n: number, fill = 1) => new Uint8Array(n).fill(fill).buffer;
 
@@ -45,6 +45,79 @@ describe('calculator storage', () => {
     await storage.clear();
     expect(backend.entries.size).toBe(0);
     expect(await storage.getRom()).toBeUndefined();
+  });
+
+  it('keeps the ROM as an ArrayBuffer, not a Blob', async () => {
+    const storage = new CalculatorStorage(memoryBackend());
+    await storage.putRom('mine.rom', bytes(64));
+    const rom = await storage.getRom();
+    expect(rom?.data).toBeInstanceOf(ArrayBuffer);
+    expect(rom?.data.byteLength).toBe(64);
+  });
+
+  it('refuses a state with no data', async () => {
+    const backend = memoryBackend();
+    await backend.set('state', { version: 1, data: new ArrayBuffer(0), romSize: 1, savedAt: 0 });
+    expect(await new CalculatorStorage(backend).getState()).toBeUndefined();
+  });
+});
+
+describe('navigator.storage.persist', () => {
+  it('asks the browser to keep the storage', async () => {
+    const calls: string[] = [];
+    const nav = {
+      storage: {
+        persisted: async () => {
+          calls.push('persisted');
+          return false;
+        },
+        persist: async () => {
+          calls.push('persist');
+          return true;
+        },
+      },
+    };
+    expect(await persistBrowserStorage(nav)).toBe(true);
+    expect(calls).toEqual(['persisted', 'persist']);
+  });
+
+  it('does not ask again when the storage is already persistent', async () => {
+    const calls: string[] = [];
+    const nav = {
+      storage: {
+        persisted: async () => {
+          calls.push('persisted');
+          return true;
+        },
+        persist: async () => {
+          calls.push('persist');
+          return true;
+        },
+      },
+    };
+    expect(await persistBrowserStorage(nav)).toBe(true);
+    expect(calls).toEqual(['persisted']);
+  });
+
+  it('reports false, never throws, on Safari, which has no such call', async () => {
+    expect(await persistBrowserStorage({})).toBe(false);
+    expect(await persistBrowserStorage({ storage: {} })).toBe(false);
+  });
+
+  it('reports false when the browser refuses, which is Safari on an unvisited site', async () => {
+    expect(await persistBrowserStorage({ storage: { persist: async () => false } })).toBe(false);
+  });
+
+  it('reports false when the call throws', async () => {
+    expect(
+      await persistBrowserStorage({
+        storage: {
+          persist: async () => {
+            throw new Error('blocked');
+          },
+        },
+      }),
+    ).toBe(false);
   });
 
   it('ignores damaged records', async () => {

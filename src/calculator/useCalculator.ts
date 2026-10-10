@@ -2,14 +2,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { KeyId } from '../core/os/keys.ts';
 import { fill } from '../site/i18n/format.ts';
 import type { CalcStrings } from '../site/i18n/types.ts';
-import { EmulatorClient } from './emulator/client.ts';
+import { startEmulatorEarly } from './emulator/early.ts';
 import { LCD_HEIGHT, LCD_WIDTH, STATUS_POWERED_OFF, type RomRejection } from './emulator/protocol.ts';
+import { classifyDroppedFile } from './files.ts';
+import { canRunEmulator, detectFeatures, type DetectedFeatures } from './features.ts';
 import { KeyHolders } from './keyHolders.ts';
 import { KeyboardController } from './keyboard.ts';
-import { CalculatorStorage } from './storage.ts';
-import { classifyDroppedFile } from './files.ts';
+import { preflightRom } from './romCheck.ts';
+import { CalculatorStorage, persistBrowserStorage } from './storage.ts';
 
-export type Phase = 'starting' | 'needRom' | 'running' | 'failed';
+export type Phase = 'starting' | 'needRom' | 'running' | 'failed' | 'unsupported';
 export type Busy = 'checking' | 'booting' | null;
 type ErrorKey = RomRejection | 'storage' | 'crashed' | 'unreadable';
 
@@ -19,10 +21,13 @@ export interface Toast {
 }
 
 const AUTOSAVE_MS = 30_000;
+const RESTORED_TOAST_MS = 3500;
+
+/** True once the page has tried the stored ROM. A remount must not boot the emulator twice. */
+let autoBootStarted = false;
 
 /** Runs the whole calculator page: storage, the emulator worker, input and saving. */
 export function useCalculator(strings: CalcStrings, brand: string) {
-  const [phase, setPhase] = useState<Phase>('starting');
   const [hasRom, setHasRom] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
   const [busy, setBusy] = useState<Busy>(null);
@@ -33,9 +38,13 @@ export function useCalculator(strings: CalcStrings, brand: string) {
   const [poweredOff, setPoweredOff] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [bootSource, setBootSource] = useState<'state' | 'rom' | null>(null);
+  const [features] = useState<DetectedFeatures>(() => detectFeatures());
+  const supported = canRunEmulator(features);
+  // A browser that cannot run the emulator at all hears about it at once, instead of watching a dead screen.
+  const [phase, setPhase] = useState<Phase>(supported ? 'starting' : 'unsupported');
 
   const canvas = useRef<HTMLCanvasElement | null>(null);
-  const clientRef = useRef<EmulatorClient | null>(null);
+  const clientRef = useRef(startEmulatorEarly());
   const storage = useMemo(() => new CalculatorStorage(), []);
   const romSize = useRef<number | undefined>(undefined);
   const saving = useRef<Promise<void> | null>(null);
@@ -51,11 +60,11 @@ export function useCalculator(strings: CalcStrings, brand: string) {
       new KeyHolders({
         setKey: (row, col, down) => {
           dirty.current = true;
-          clientRef.current?.setKey(row, col, down);
+          clientRef.current.setKey(row, col, down);
         },
         tapKey: (row, col) => {
           dirty.current = true;
-          clientRef.current?.tapKey(row, col);
+          clientRef.current.tapKey(row, col);
         },
       }),
     [],
@@ -108,11 +117,15 @@ export function useCalculator(strings: CalcStrings, brand: string) {
     return job;
   }, [storage]);
 
-  // Start up: read storage, wait for WebAssembly, boot from the saved state or the ROM.
+  /**
+   * Start up. Nothing here waits for a click.
+   *
+   * The worker was already started before React ran, so this only reads the visitor's ROM from IndexedDB, checks it,
+   * and boots. The two reads (ROM and saved state) and the WebAssembly compile all run at the same time.
+   */
   useEffect(() => {
-    const client = new EmulatorClient();
-    clientRef.current = client;
-    let alive = true;
+    const client = clientRef.current;
+    const alive = true;
     client.events = {
       frame: paint,
       keys: (next) => setRows(next),
@@ -122,15 +135,25 @@ export function useCalculator(strings: CalcStrings, brand: string) {
         setPhase('failed');
       },
     };
+    if (!supported) return;
+    if (autoBootStarted) return;
+    autoBootStarted = true;
+
     void (async () => {
-      let stored;
-      try {
-        stored = await storage.getRom();
-      } catch {
-        stored = undefined;
-      }
+      const [stored, state] = await Promise.all([
+        storage.getRom().catch(() => undefined),
+        storage.getState().catch(() => undefined),
+      ]);
       if (!alive) return;
       if (!stored) {
+        setPhase('needRom');
+        setPanelOpen(true);
+        return;
+      }
+      // A stored ROM that cannot possibly be a ROM is a broken record, not a reason to hang on a blank screen.
+      const check = preflightRom(new Uint8Array(stored.data));
+      if (!check.ok) {
+        setError(check.reason === 'unavailable' ? 'unavailable' : check.reason);
         setPhase('needRom');
         setPanelOpen(true);
         return;
@@ -143,18 +166,14 @@ export function useCalculator(strings: CalcStrings, brand: string) {
         }
         return;
       }
-      let state;
-      try {
-        state = await storage.getState(stored.size);
-      } catch {
-        state = undefined;
-      }
-      const result = await client.boot({ rom: stored.data, state: state?.data });
+      const saved = state && state.romSize === stored.size ? state : undefined;
+      const result = await client.boot({ rom: stored.data, state: saved?.data });
       if (!alive) return;
       if (result.ok) {
         romSize.current = stored.size;
         setBootSource(result.from);
         setPhase('running');
+        showToast({ text: strings.restoring, tone: 'info' }, RESTORED_TOAST_MS);
         if (document.visibilityState === 'hidden') client.pause();
       } else {
         setError(result.reason === 'noSource' ? 'unavailable' : result.reason);
@@ -163,12 +182,7 @@ export function useCalculator(strings: CalcStrings, brand: string) {
         setPanelOpen(true);
       }
     })();
-    return () => {
-      alive = false;
-      client.dispose();
-      clientRef.current = null;
-    };
-  }, [paint, storage]);
+  }, [paint, showToast, storage, strings, supported]);
 
   // Pause while the tab is hidden, and save the state when it hides or closes.
   useEffect(() => {
@@ -233,7 +247,12 @@ export function useCalculator(strings: CalcStrings, brand: string) {
     };
   }, [keyboard]);
 
-  /** Checks a ROM with CEmu, stores it, and boots it. Returns true on success. */
+  /**
+   * Checks a ROM, stores it, and boots it. Returns true on success.
+   *
+   * The size and header check runs first, in microseconds, so a wrong file is refused before the emulator is asked.
+   * What survives goes to CEmu's own checks in the worker.
+   */
   const loadRom = useCallback(
     async (file: File): Promise<boolean> => {
       const client = clientRef.current;
@@ -248,6 +267,12 @@ export function useCalculator(strings: CalcStrings, brand: string) {
         setBusy(null);
         return false;
       }
+      const quick = preflightRom(new Uint8Array(buffer));
+      if (!quick.ok) {
+        setError(quick.reason === 'unavailable' ? 'unavailable' : quick.reason);
+        setBusy(null);
+        return false;
+      }
       if (!(await client.whenReady())) {
         setError('unavailable');
         setBusy(null);
@@ -255,7 +280,7 @@ export function useCalculator(strings: CalcStrings, brand: string) {
       }
       const check = await client.validateRom(buffer);
       if (!check.ok) {
-        setError(check.reason);
+        setError(check.reason === 'unavailable' ? 'unavailable' : check.reason);
         setBusy(null);
         return false;
       }
@@ -266,6 +291,8 @@ export function useCalculator(strings: CalcStrings, brand: string) {
       } catch {
         stored = false;
       }
+      // Ask the browser to keep it. Chrome grants it silently, Safari does not have the call.
+      void persistBrowserStorage();
       const result = await client.boot({ rom: buffer });
       setBusy(null);
       if (!result.ok) {
@@ -394,6 +421,7 @@ export function useCalculator(strings: CalcStrings, brand: string) {
     poweredOff,
     dragging,
     bootSource,
+    features,
     canvas,
     holders,
     loadRom,

@@ -55,6 +55,23 @@ export function memoryBackend(): KeyValueBackend & { entries: Map<string, unknow
 const ROM_KEY = 'rom';
 const STATE_KEY = 'state';
 
+/**
+ * Asks the browser to keep this site's storage. Chrome grants it silently, Firefox prompts, Safari does not have the
+ * call at all. Losing it is not fatal, so a false return is reported, never thrown.
+ */
+export async function persistBrowserStorage(
+  nav: { storage?: { persist?: () => Promise<boolean>; persisted?: () => Promise<boolean> } } = navigator,
+): Promise<boolean> {
+  try {
+    const storage = nav.storage;
+    if (typeof storage?.persist !== 'function') return false;
+    if (typeof storage.persisted === 'function' && (await storage.persisted())) return true;
+    return await storage.persist();
+  } catch {
+    return false;
+  }
+}
+
 export class CalculatorStorage {
   constructor(private readonly backend: KeyValueBackend = indexedDbBackend()) {}
 

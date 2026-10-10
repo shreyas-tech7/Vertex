@@ -10,11 +10,11 @@ An ad-free TI-84 Plus CE calculator that runs in your browser. Vertex runs the r
 
 ## How it works
 
-1. Open the page. The calculator's screen asks for a ROM.
-2. Dump a ROM from your own TI-84 Plus CE with the ROM dump wizard in CEmu, then choose the file or drop it on the screen.
-3. Vertex checks it with CEmu, stores it in your browser (IndexedDB) and boots. The ROM never leaves your browser.
+1. Open the page. If you have loaded a ROM before, the calculator boots on its own from the copy your browser kept, with no click and no setup screen.
+2. First visit: dump a ROM from your own TI-84 Plus CE with the ROM dump wizard in CEmu, then choose the file or drop it on the screen. One step, and it boots on its own.
+3. Vertex checks it with CEmu, stores it in your browser (IndexedDB), asks the browser to keep that storage, and boots. The ROM never leaves your browser.
 4. Use the on-screen keys, a touchscreen or your keyboard. Drop a `.8xp` (or any TI variable file) on the calculator to send it.
-5. Close the tab and come back. The calculator resumes where you left it.
+5. Close the tab and come back. The calculator boots straight into the screen you left, with no click.
 
 Nothing in this repository is a calculator ROM or OS image, and nothing is downloaded from Texas Instruments.
 
@@ -24,7 +24,7 @@ Nothing in this repository is a calculator ROM or OS image, and nothing is downl
 npm install
 npm run dev          # http://localhost:5173
 npm run check        # typecheck, lint, unit tests, build, forbidden-content scan
-npm run test:e2e     # builds, then Playwright (Chromium, Firefox, WebKit, phone viewport)
+npm run test:e2e     # builds, then Playwright (Chromium, Firefox, WebKit desktop, iPad, iPhone, phone viewport)
 npm run scan         # no ROMs, OS images, TI art or TI hosts in the repo, the build or the source archive
 ```
 

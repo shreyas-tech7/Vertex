@@ -65,4 +65,15 @@ if (foreign.length > 0) {
   console.log('\nFOREIGN ORIGINS:', foreign.join(', '));
   process.exit(1);
 }
-console.log("\nno request left the site's own origin");
+// Hosts Vertex must never contact: the makers of the calculator and of the exam software.
+const blocked = [
+  new RegExp(['education\\.', 'ti\\.com'].join(''), 'i'),
+  new RegExp(['pear', 'son\\.com'].join(''), 'i'),
+];
+const tiHits = requests.filter(({ url }) => blocked.some((pattern) => pattern.test(url)));
+if (tiHits.length > 0) {
+  console.log('\nTI OR PEARSON HOST CONTACTED:', tiHits.map((r) => r.url).join(', '));
+  process.exit(1);
+}
+console.log("no request left the site's own origin");
+console.log('no request went to a Texas Instruments or Pearson host');

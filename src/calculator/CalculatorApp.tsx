@@ -1,8 +1,10 @@
 // Page shell and zoom controls adapted from github.com/bifdu9898/TI84Calculator (MIT), see THIRD_PARTY_NOTICES.md.
-import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState, type CSSProperties } from 'react';
 import { APP_NAME } from '../core/brand.ts';
 import { fillDeep } from '../site/i18n/format.ts';
 import { STRINGS } from '../site/i18n/index.ts';
+import { inputMode } from './pointerInput.ts';
+import { InstallHint } from './InstallHint.tsx';
 import { Keypad } from './Keypad.tsx';
 import { BODY_HEIGHT, BODY_WIDTH } from './keypadLayout.ts';
 import { pageLanguage } from './language.ts';
@@ -12,10 +14,11 @@ import { useCalculator } from './useCalculator.ts';
 import { ZoomControls } from './ZoomControls.tsx';
 import {
   ZOOM_MAX,
+  ZOOM_STORAGE_KEY,
+  defaultZoom,
   effectiveZoom,
   frameHeight,
   notifyParentHeight,
-  readZoom,
   saveZoom,
   stepFromShown,
   zoomCap,
@@ -29,25 +32,52 @@ function browserStorage(): Storage | null {
   }
 }
 
+const TOUCH_QUERY = '(pointer: coarse)';
+
+/** What the visitor asked for, before the frame holds it at the largest zoom that still fits. */
+function initialZoom(): number {
+  const storage = browserStorage();
+  let saved: string | null = null;
+  let coarse = false;
+  try {
+    saved = storage?.getItem(ZOOM_STORAGE_KEY) ?? null;
+    coarse = window.matchMedia?.(TOUCH_QUERY).matches ?? false;
+  } catch {
+    /* storage or matchMedia blocked: the saved level, or the plain default, is all we have */
+  }
+  return defaultZoom(saved, coarse);
+}
+
 export function CalculatorApp() {
   const lang = pageLanguage(window.location.search, document.documentElement.lang);
   const strings = useMemo(() => fillDeep(STRINGS[lang].calc, { brand: APP_NAME }), [lang]);
   const calculator = useCalculator(strings, APP_NAME);
-  // What the visitor asked for is remembered. What is shown is that, held at the largest zoom that still fits the frame.
-  const [requested, setRequested] = useState(() => readZoom(browserStorage()));
+  const [requested, setRequested] = useState(initialZoom);
   const [frameWidth, setFrameWidth] = useState(() => document.documentElement.clientWidth);
   const cap = zoomCap(frameWidth, BODY_WIDTH);
   const zoom = effectiveZoom(requested, frameWidth, BODY_WIDTH);
   const maxZoom = Math.min(ZOOM_MAX, cap);
+  const keypadMode = useMemo(
+    () => inputMode(calculator.features.pointerEvents),
+    [calculator.features.pointerEvents],
+  );
 
   useEffect(() => {
     document.title = strings.pageTitle;
   }, [strings.pageTitle]);
 
+  // Width comes from the layout, and iPad Split View, Slide Over and rotation all change it without a resize event
+  // on window. The visual viewport covers rotation and the on-screen keyboard too.
   useEffect(() => {
     const measure = () => setFrameWidth(document.documentElement.clientWidth);
     window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
+    window.addEventListener('orientationchange', measure);
+    window.visualViewport?.addEventListener('resize', measure);
+    return () => {
+      window.removeEventListener('resize', measure);
+      window.removeEventListener('orientationchange', measure);
+      window.visualViewport?.removeEventListener('resize', measure);
+    };
   }, []);
 
   useEffect(() => {
@@ -64,7 +94,9 @@ export function CalculatorApp() {
   }, [zoom]);
 
   const showPanel = calculator.panelOpen;
-  const loading = calculator.phase === 'starting' && !showPanel;
+  const unsupported = calculator.phase === 'unsupported';
+  const loading =
+    !unsupported && !showPanel && calculator.phase !== 'running' && calculator.phase !== 'failed';
 
   return (
     <>
@@ -86,8 +118,14 @@ export function CalculatorApp() {
             data-powered-off={calculator.poweredOff || undefined}
             data-boot={calculator.bootSource ?? undefined}
             data-phase={calculator.phase}
+            style={{ '--zoom': zoom } as CSSProperties}
           >
             <Screen strings={strings} canvas={calculator.canvas} loading={loading} toast={calculator.toast}>
+              {unsupported && (
+                <div className="screen-loading screen-failed" role="alert">
+                  <span>{strings.unsupported}</span>
+                </div>
+              )}
               {calculator.phase === 'failed' && !showPanel && (
                 <div className="screen-loading screen-failed" role="alert">
                   <span>{calculator.error ? strings.errors[calculator.error] : ''}</span>
@@ -110,6 +148,7 @@ export function CalculatorApp() {
               rows={calculator.rows}
               held={calculator.held}
               label={strings.keypadLabel}
+              mode={keypadMode}
             />
           </div>
         </div>
@@ -128,6 +167,7 @@ export function CalculatorApp() {
         </button>
         <p className="notice">{strings.notice}</p>
       </div>
+      <InstallHint strings={strings} />
     </>
   );
 }

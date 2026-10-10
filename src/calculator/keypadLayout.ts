@@ -22,15 +22,23 @@ export const SCREEN = {
 } as const;
 
 const PAD_X = SCREEN.x;
-const COLUMN_PITCH = SCREEN.width / 5;
+export const COLUMN_PITCH = SCREEN.width / 5;
 const KEY_WIDTH = 38;
 const LEGEND_HEIGHT = 10;
 const LEGEND_INSET = 1.2;
 const FIRST_ROW_Y = 211;
-const FIRST_ROW_PITCH = 34;
+export const FIRST_ROW_PITCH = 34;
 const FIRST_ROW_KEY_HEIGHT = 20;
-const ROW_PITCH = 38;
+export const ROW_PITCH = 38;
 const KEY_HEIGHT = 25;
+
+/**
+ * The size a key's touch target grows to on a touch screen: the whole grid cell it sits in. The keys are drawn
+ * 38 x 25 (20 in the first row) on a 46.4 x 34 or 46.4 x 38 pitch, so the target is the pitch and nothing overlaps.
+ */
+export const TOUCH_PAD_X = (COLUMN_PITCH - KEY_WIDTH) / 2;
+export const TOUCH_PAD_FIRST_ROW_Y = (FIRST_ROW_PITCH - FIRST_ROW_KEY_HEIGHT) / 2;
+export const TOUCH_PAD_Y = (ROW_PITCH - KEY_HEIGHT) / 2;
 
 export type KeyKind = 'fn' | 'second' | 'alpha' | 'dark' | 'op' | 'num' | 'enter' | 'arrow';
 
@@ -45,6 +53,12 @@ export interface KeyBox {
   legendY: number;
   legendX: number;
   legendWidth: number;
+  /**
+   * How far a touch target may grow past the drawn key on each side, on a touch screen only. The growth stops at
+   * half the gap to the next key, so two targets never overlap and a tap always lands on the key under the finger.
+   */
+  padX: number;
+  padY: number;
 }
 
 /** Each row of the keypad, top to bottom, as in the spec. Arrow keys are placed separately. */
@@ -136,6 +150,8 @@ export const KEY_BOXES: readonly KeyBox[] = ROWS.flatMap((keys, row) =>
       // The legends use the whole column, so a long 2nd legend and an ALPHA legend share one strip.
       legendX: PAD_X + column * COLUMN_PITCH + LEGEND_INSET,
       legendWidth: COLUMN_PITCH - 2 * LEGEND_INSET,
+      padX: TOUCH_PAD_X,
+      padY: row === 0 ? TOUCH_PAD_FIRST_ROW_Y : TOUCH_PAD_Y,
     } satisfies KeyBox;
   }),
 );

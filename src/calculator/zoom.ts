@@ -47,6 +47,18 @@ export function stepFromShown(shown: number, direction: 1 | -1): number {
   return clampZoom(next / 100);
 }
 
+/**
+ * The zoom a first visit starts at. A finger needs more room than a mouse: at 130% every key target is at least
+ * 44 px, which is the smallest Apple recommends. A visitor who has picked a level gets that level back.
+ */
+export const TOUCH_DEFAULT_ZOOM = 1.3;
+
+/** `saved` is the raw value in localStorage, or null when the visitor has not picked a level yet. */
+export function defaultZoom(saved: string | null, coarsePointer: boolean): number {
+  if (saved !== null) return clampZoom(Number.parseFloat(saved));
+  return coarsePointer ? TOUCH_DEFAULT_ZOOM : ZOOM_DEFAULT;
+}
+
 export const zoomLabel = (value: number): string => `${Math.round(value * 100)}%`;
 
 interface TextStorage {
@@ -81,7 +93,8 @@ export interface HeightMessage {
 export const FRAME_OVERHEAD = 150;
 
 /** The iframe height the parent should use: the case at this zoom plus the controls and the lines below it. */
-export const frameHeight = (bodyHeight: number, zoom: number): number => Math.ceil(bodyHeight * zoom + FRAME_OVERHEAD);
+export const frameHeight = (bodyHeight: number, zoom: number): number =>
+  Math.ceil(bodyHeight * zoom + FRAME_OVERHEAD);
 
 /**
  * Posts the new height to the parent page. The message goes to this page's own origin only, never to `*`.
