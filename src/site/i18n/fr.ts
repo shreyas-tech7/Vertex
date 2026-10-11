@@ -243,14 +243,6 @@ export const fr: Strings = {
     zoomOut: 'Réduire',
     zoomIn: 'Agrandir',
     zoomLabel: 'Niveau de zoom',
-    romHeading: 'Chargez votre ROM TI-84 Plus CE',
-    romDrop: 'Déposez votre fichier ROM ici. Il ne quitte jamais votre navigateur.',
-    romChoose: 'Choisir un fichier ROM',
-    romHint: 'Créez une ROM à partir de votre calculatrice avec l’{link}.',
-    romHintLink: 'assistant d’extraction de ROM de CEmu',
-    romGuideTitle: 'Comment obtenir une ROM à partir de votre calculatrice',
-    romGuide:
-      'Connectez votre TI-84 Plus CE à un ordinateur, ouvrez CEmu, puis utilisez son assistant d’extraction pour écrire un fichier ROM. Gardez ce fichier. Vertex n’a aucune ROM et ne peut pas vous en donner une.',
     installTitle: 'Gardez votre ROM sur cet appareil',
     installBody:
       'Safari peut vider le stockage d’un site que vous n’avez pas ouvert depuis un moment. Ajoutez Vertex à l’écran d’accueil pour qu’il garde votre ROM. Touchez Partager, puis Sur l’écran d’accueil.',
@@ -258,10 +250,6 @@ export const fr: Strings = {
     restoring: 'Votre ROM a été restaurée depuis ce navigateur.',
     unsupported:
       'Ce navigateur ne peut pas faire fonctionner la calculatrice, car une fonction nécessaire à l’émulateur est absente. Essayez une version récente de Chrome, Safari, Edge ou Firefox.',
-    replace: 'Remplacer',
-    remove: 'Supprimer',
-    cancel: 'Annuler',
-    changeRom: 'Changer de ROM',
     checking: 'Vérification de votre ROM…',
     starting: 'Démarrage de votre calculatrice…',
     loading: 'Chargement de l’émulateur…',
@@ -277,6 +265,8 @@ export const fr: Strings = {
         'Votre navigateur a refusé de stocker la ROM. Vous devrez la charger de nouveau la prochaine fois.',
       crashed: 'L’émulateur s’est arrêté. Rechargez la page pour le relancer.',
       unreadable: 'Votre navigateur n’a pas pu lire ce fichier.',
+      missing: 'Ce site n’a pas encore de ROM installée, la calculatrice ne peut donc pas démarrer.',
+      offline: 'La ROM n’a pas pu être téléchargée. Vérifie la connexion et recharge la page.',
     },
     transfer: {
       sending: 'Envoi de {name}…',

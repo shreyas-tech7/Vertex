@@ -238,14 +238,6 @@ export const sv: Strings = {
     zoomOut: 'Zooma ut',
     zoomIn: 'Zooma in',
     zoomLabel: 'Zoomnivå',
-    romHeading: 'Ladda din TI-84 Plus CE-ROM',
-    romDrop: 'Släpp din ROM-fil här. Den lämnar aldrig din webbläsare.',
-    romChoose: 'Välj ROM-fil',
-    romHint: 'Skapa en ROM från din egen räknare med {link}.',
-    romHintLink: 'ROM-dumpguiden i CEmu',
-    romGuideTitle: 'Så får du en ROM från din egen räknare',
-    romGuide:
-      'Anslut din egen TI-84 Plus CE till en dator, öppna CEmu och skriv en ROM-fil med dess dumpguide. Spara den filen. Vertex har ingen ROM och kan inte ge dig en.',
     installTitle: 'Behåll din ROM på den här enheten',
     installBody:
       'Safari kan rensa lagringen för en webbplats du inte har öppnat på ett tag. Lägg till Vertex på hemskärmen så behåller den din ROM. Tryck på Dela och sedan Lägg till på hemskärmen.',
@@ -253,10 +245,6 @@ export const sv: Strings = {
     restoring: 'Din ROM återställdes från den här webbläsaren.',
     unsupported:
       'Den här webbläsaren kan inte köra räknaren eftersom en funktion som emulatorn behöver saknas. Prova en aktuell version av Chrome, Safari, Edge eller Firefox.',
-    replace: 'Ersätt',
-    remove: 'Ta bort',
-    cancel: 'Avbryt',
-    changeRom: 'Byt ROM',
     checking: 'Kontrollerar din ROM…',
     starting: 'Startar din räknare…',
     loading: 'Laddar emulatorn…',
@@ -271,6 +259,8 @@ export const sv: Strings = {
       storage: 'Din webbläsare sparade inte ROM, så du måste ladda den igen nästa gång.',
       crashed: 'Emulatorn stannade. Ladda om sidan för att starta den igen.',
       unreadable: 'Din webbläsare kunde inte läsa filen.',
+      missing: 'Den här sidan har ingen ROM installerad än, så räknaren kan inte starta.',
+      offline: 'ROM:en kunde inte laddas ner. Kontrollera anslutningen och ladda om sidan.',
     },
     transfer: {
       sending: 'Skickar {name}…',

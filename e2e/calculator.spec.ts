@@ -4,7 +4,7 @@ import { KEYBOARD_SHORTCUTS } from '../src/calculator/keyboard.ts';
 import { buildSyntheticRom } from '../src/test-support/syntheticRom.ts';
 import {
   MATRIX_EMPTY,
-  ROM_ARGS,
+  ROM_URL,
   shownZoom,
   expect,
   expectMatrix,
@@ -12,107 +12,134 @@ import {
   loadSyntheticRom,
   matrixOnly,
   openCalculator,
+  readStored,
   recordMatrix,
-  syntheticRomBuffer,
+  serveRom,
   test,
 } from './support.ts';
 
-test.describe('ROM panel', () => {
-  test('first visit shows the panel in the screen area, with a picker, a drop zone and one hint line', async ({
-    page,
-  }) => {
+test.describe('the ROM the site serves', () => {
+  test('boots on its own when the page opens, with nothing to click and nothing to upload', async ({ page }) => {
     await openCalculator(page);
-    const panel = page.locator('.rom-panel');
-    await expect(panel.getByRole('heading', { name: 'Load your TI-84 Plus CE ROM' })).toBeVisible();
-    await expect(panel.getByRole('button', { name: 'Choose ROM file' })).toBeVisible();
-    await expect(panel.locator('.rom-drop')).toContainText('Drop your ROM file here');
-    // The legal guide is one step away, inside a collapsed disclosure, so the panel keeps fitting the LCD.
-    const guide = panel.locator('.rom-guide');
-    await expect(guide).toContainText('How to get a ROM from your own calculator');
-    await guide.locator('summary').click();
-    const link = guide.getByRole('link', { name: 'ROM dump wizard in CEmu' });
-    await expect(link).toHaveAttribute('href', 'https://ce-programming.github.io/CEmu/');
-    await expect(guide).toContainText('Connect your own TI-84 Plus CE');
-    await guide.locator('summary').click();
-    // The panel sits exactly over the LCD, which is 232 x 174 (the 320 x 240 screen at 0.725).
-    const screen = (await page.locator('.screen').boundingBox())!;
-    const box = (await panel.boundingBox())!;
-    expect(Math.abs(box.width - screen.width)).toBeLessThan(1);
-    expect(Math.abs(box.height - screen.height)).toBeLessThan(1);
-    // 232 x 174 at 100%. A touch profile starts at 130%, so the shown size is that times the zoom.
-    const zoom = (await shownZoom(page)) / 100;
-    expect(screen.width).toBeCloseTo(232 * zoom, 0);
-    expect(screen.height).toBeCloseTo(174 * zoom, 0);
-    // The Change ROM link only appears once a ROM is loaded.
-    await expect(page.getByRole('button', { name: 'Change ROM' })).toBeHidden();
+    // No click, no file, no setup: the calculator is running.
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running', { timeout: 30_000 });
+    // And there is no way in the interface to upload anything: no panel, no picker, no drop zone, no wizard link.
+    await expect(page.locator('.rom-panel')).toHaveCount(0);
+    await expect(page.locator('input[type=file]')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /choose|replace|remove|change rom/i })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: /dump wizard|CEmu/i })).toHaveCount(0);
+    // The case, the keypad and the LCD were on screen the whole time.
+    await expect(page.locator('.keypad [data-key]')).toHaveCount(50);
+    await expect(page.getByLabel('Calculator screen')).toBeVisible();
+    // What booted is the ROM from the path the site serves it on.
+    const stored = await readStored<{ name: string; size: number; source: string }>(page, 'rom');
+    expect(stored).toMatchObject({ size: 0x400000, source: ROM_URL });
+    expect(stored?.bytes).toBe(0x400000);
   });
 
-  test('rejects a file that is not a ROM with a plain message', async ({ page }) => {
+  test('keeps the ROM in IndexedDB and revalidates it instead of downloading it again', async ({ page }) => {
+    const responses: number[] = [];
+    page.on('response', (response) => {
+      if (response.url().endsWith(`/${ROM_URL}`)) responses.push(response.status());
+    });
     await openCalculator(page);
-    await page
-      .getByTestId('rom-input')
-      .setInputFiles({ ...ROM_ARGS, name: 'notes.rom', buffer: Buffer.from('this is not a calculator ROM') });
-    await expect(page.locator('.rom-error')).toHaveText(
-      'That file is too small to be a ROM. A TI-84 Plus CE ROM is about 4 MB.',
-    );
-    await expect(page.locator('.rom-panel')).toBeVisible();
-    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'needRom');
-  });
-
-  test('rejects an empty file and a 4 MB file of zeros', async ({ page }) => {
-    await openCalculator(page);
-    await page.getByTestId('rom-input').setInputFiles({ ...ROM_ARGS, buffer: Buffer.alloc(0) });
-    await expect(page.locator('.rom-error')).toHaveText(
-      'That file is empty. Choose the ROM you dumped from your calculator.',
-    );
-    await page.getByTestId('rom-input').setInputFiles({ ...ROM_ARGS, buffer: Buffer.alloc(0x400000) });
-    await expect(page.locator('.rom-error')).toHaveText(
-      'That file is not a TI-84 Plus CE ROM. Choose the ROM from your calculator.',
-    );
-  });
-
-  test('rejects a file that is far too big before the emulator ever sees it', async ({ page }) => {
-    await openCalculator(page);
-    await page.getByTestId('rom-input').setInputFiles({ ...ROM_ARGS, buffer: Buffer.alloc(0x2000001) });
-    await expect(page.locator('.rom-error')).toHaveText(
-      'That file is too big to be a ROM. A TI-84 Plus CE ROM is about 4 MB.',
-    );
-  });
-
-  test('accepts a file CEmu validates, stores it in IndexedDB and shows the calculator', async ({ page }) => {
-    await openCalculator(page);
-    await loadSyntheticRom(page);
-    await expect(page.getByRole('button', { name: 'Change ROM' })).toBeVisible();
-    const stored = await page.evaluate(
-      () =>
-        new Promise<{ name: string; size: number } | null>((resolve) => {
-          const open = indexedDB.open('vertex-calculator');
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running', { timeout: 30_000 });
+    expect(responses).toEqual([200]);
+    // IndexedDB hands back an ArrayBuffer, which is what CEmu needs. A Blob would not survive.
+    expect(
+      await page.evaluate(() => {
+        const open = indexedDB.open('vertex-calculator');
+        return new Promise<string>((resolve) => {
           open.onsuccess = () => {
             const get = open.result.transaction('kv').objectStore('kv').get('rom');
-            get.onsuccess = () =>
-              resolve(get.result ? { name: get.result.name, size: get.result.size } : null);
+            get.onsuccess = () => resolve(Object.prototype.toString.call(get.result.data));
           };
-        }),
-    );
-    expect(stored).toEqual({ name: 'synthetic.rom', size: 0x400000 });
+        });
+      }),
+    ).toBe('[object ArrayBuffer]');
+
+    await page.reload();
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running', { timeout: 30_000 });
+    // The second visit asks whether the copy in storage is still current, and the host answers 304.
+    expect(responses).toEqual([200, 304]);
   });
 
-  test('accepts a ROM dropped on the panel', async ({ page }) => {
+  test('a reload boots straight to the calculator and never shows an upload step', async ({ page }) => {
     await openCalculator(page);
-    const dataTransfer = await romDataTransfer(page);
-    await page.locator('.rom-drop').dispatchEvent('drop', { dataTransfer });
-    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running');
+    await loadSyntheticRom(page);
+    // Watch from the first moment of the next load, so a step that came and went cannot hide.
+    await page.addInitScript(() => {
+      const record = window as unknown as { phases: string[]; panelSeen: boolean };
+      record.phases = [];
+      record.panelSeen = false;
+      new MutationObserver(() => {
+        const phase = document.querySelector('.calc-body')?.getAttribute('data-phase');
+        if (phase && record.phases[record.phases.length - 1] !== phase) record.phases.push(phase);
+        if (document.querySelector('.rom-panel, input[type=file]')) record.panelSeen = true;
+      }).observe(document, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        attributeFilter: ['data-phase'],
+      });
+    });
+    await page.reload();
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running', { timeout: 30_000 });
+    const seen = await page.evaluate(() => {
+      const record = window as unknown as { phases: string[]; panelSeen: boolean };
+      return { phases: record.phases, panelSeen: record.panelSeen };
+    });
+    expect(seen.phases).not.toContain('needRom');
+    expect(seen.phases.length).toBeGreaterThan(0);
+    expect(seen.panelSeen).toBe(false);
   });
 
-  test('accepts a ROM dropped anywhere on the calculator, not only on the panel', async ({ page }) => {
+  test('a site with no ROM says so in one sentence, and still asks for no file', async ({ page, problems }) => {
+    await serveRom(page, 'missing');
     await openCalculator(page);
-    const dataTransfer = await romDataTransfer(page);
-    await page.locator('[data-key="ENTER"]').dispatchEvent('drop', { dataTransfer });
-    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running');
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'needRom');
+    const status = page.locator('.screen-status');
+    await expect(status).toContainText('This site has no ROM installed yet');
+    // The sentence sits inside the LCD, and nothing anywhere offers an upload.
+    const screen = (await page.locator('.screen').boundingBox())!;
+    const box = (await status.boundingBox())!;
+    expect(box.width).toBeLessThanOrEqual(screen.width + 1);
+    expect(box.height).toBeLessThanOrEqual(screen.height + 1);
+    await expect(page.locator('input[type=file]')).toHaveCount(0);
     await expect(page.locator('.rom-panel')).toHaveCount(0);
+    // Nothing was stored, so the next load is a clean start again.
+    expect(await readStored<{ size: number }>(page, 'rom')).toBeNull();
+    problems.length = 0; // the 404 is the point of this test
   });
 
-  test('a ROM dropped on the case while one is running replaces it', async ({ page }) => {
+  test('an unreachable ROM falls back to the copy this browser kept', async ({ page, problems }) => {
+    await serveRom(page, 'ok');
+    await openCalculator(page);
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running', { timeout: 30_000 });
+    await serveRom(page, 'offline');
+    await page.reload();
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running', { timeout: 30_000 });
+    await expect(page.locator('.toast')).toContainText('could not be downloaded');
+    problems.length = 0; // the failed request is the point of this test
+  });
+
+  test('an unreachable ROM with nothing stored says so in one sentence', async ({ page, problems }) => {
+    await serveRom(page, 'offline');
+    await openCalculator(page);
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'needRom');
+    await expect(page.locator('.screen-status')).toContainText('could not be downloaded');
+    await expect(page.locator('input[type=file]')).toHaveCount(0);
+    problems.length = 0; // the failed request is the point of this test
+  });
+
+  test('a served file that is not a ROM is refused before the emulator is asked', async ({ page }) => {
+    await serveRom(page, 'invalid');
+    await openCalculator(page);
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'needRom');
+    await expect(page.locator('.screen-status')).toContainText('not a TI-84 Plus CE ROM');
+  });
+
+  test('a ROM dropped on the calculator replaces the served one, with no prompt anywhere', async ({ page }) => {
     await openCalculator(page);
     await loadSyntheticRom(page);
     const dataTransfer = await romDataTransfer(page);
@@ -132,117 +159,14 @@ test.describe('ROM panel', () => {
       )
       .toBe('dropped.rom');
     await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running');
+    await expect(page.locator('input[type=file]')).toHaveCount(0);
   });
 
-  test('a reload with a stored ROM never shows the panel and data-phase never says needRom', async ({
-    page,
-  }) => {
+  test('a dropped file that is not a ROM leaves the running calculator alone', async ({ page }) => {
     await openCalculator(page);
     await loadSyntheticRom(page);
-    // Watch from the first moment of the next page load, so nothing can slip past between two polls.
-    await page.addInitScript(() => {
-      const record = window as unknown as { phases: string[]; panelSeen: boolean };
-      record.phases = [];
-      record.panelSeen = false;
-      new MutationObserver(() => {
-        const phase = document.querySelector('.calc-body')?.getAttribute('data-phase');
-        if (phase && record.phases[record.phases.length - 1] !== phase) record.phases.push(phase);
-        if (document.querySelector('.rom-panel')) record.panelSeen = true;
-      }).observe(document, {
-        subtree: true,
-        childList: true,
-        attributes: true,
-        attributeFilter: ['data-phase'],
-      });
-    });
-    await page.reload();
+    await dropFile(page, 'notes.txt', 'this is not a ROM');
     await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running');
-    const seen = await page.evaluate(() => {
-      const record = window as unknown as { phases: string[]; panelSeen: boolean };
-      return { phases: record.phases, panelSeen: record.panelSeen };
-    });
-    expect(seen.phases).not.toContain('needRom');
-    expect(seen.phases.length).toBeGreaterThan(0);
-    expect(seen.panelSeen).toBe(false);
-  });
-
-  for (const lang of LANGS) {
-    test(`${lang}: the ROM panel fits the 232 x 174 LCD without scrolling, with and without an error`, async ({
-      page,
-    }) => {
-      await openCalculator(page, `?lang=${lang}`);
-      const fits = () =>
-        page.locator('.rom-panel').evaluate((el) => ({
-          panelHeight: el.scrollHeight - el.clientHeight,
-          panelWidth: el.scrollWidth - el.clientWidth,
-          zoneHeight:
-            (el.querySelector('.rom-drop') as HTMLElement).scrollHeight -
-            (el.querySelector('.rom-drop') as HTMLElement).clientHeight,
-        }));
-      expect(await fits()).toEqual({ panelHeight: 0, panelWidth: 0, zoneHeight: 0 });
-      await page
-        .getByTestId('rom-input')
-        .setInputFiles({ ...ROM_ARGS, name: 'notes.rom', buffer: Buffer.from('not a ROM') });
-      await expect(page.locator('.rom-error')).not.toHaveText('');
-      expect(await fits()).toEqual({ panelHeight: 0, panelWidth: 0, zoneHeight: 0 });
-    });
-  }
-
-  test('a reload boots straight to the calculator from the stored ROM', async ({ page }) => {
-    await openCalculator(page);
-    await loadSyntheticRom(page);
-    await page.reload();
-    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running');
-    await expect(page.locator('.rom-panel')).toHaveCount(0);
-  });
-
-  test('saves the state when the tab hides and restores it on the next load', async ({ page }) => {
-    await openCalculator(page);
-    await loadSyntheticRom(page);
-    await expect(page.locator('.calc-body')).toHaveAttribute('data-boot', 'rom');
-    await hideTab(page);
-    await expect
-      .poll(() =>
-        page.evaluate(
-          () =>
-            new Promise<number>((resolve) => {
-              const open = indexedDB.open('vertex-calculator');
-              open.onsuccess = () => {
-                const get = open.result.transaction('kv').objectStore('kv').get('state');
-                get.onsuccess = () => resolve(get.result ? get.result.data.byteLength : 0);
-              };
-            }),
-        ),
-      )
-      .toBeGreaterThan(1_000_000);
-    await page.reload();
-    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running');
-    await expect(page.locator('.calc-body')).toHaveAttribute('data-boot', 'state');
-  });
-
-  test('Change ROM reopens the panel with Replace, Remove and Cancel', async ({ page }) => {
-    await openCalculator(page);
-    await loadSyntheticRom(page);
-    await page.getByRole('button', { name: 'Change ROM' }).click();
-    const panel = page.locator('.rom-panel');
-    await expect(panel.getByRole('button', { name: 'Replace' })).toBeVisible();
-    await expect(panel.getByRole('button', { name: 'Remove' })).toBeVisible();
-    await panel.getByRole('button', { name: 'Cancel' }).click();
-    await expect(panel).toHaveCount(0);
-    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running');
-  });
-
-  test('a bad replacement leaves the running calculator alone', async ({ page }) => {
-    await openCalculator(page);
-    await loadSyntheticRom(page);
-    await page.getByRole('button', { name: 'Change ROM' }).click();
-    await page
-      .getByTestId('rom-input')
-      .setInputFiles({ ...ROM_ARGS, name: 'bad.rom', buffer: Buffer.from('nope') });
-    await expect(page.locator('.rom-error')).toHaveText(
-      'That file is too small to be a ROM. A TI-84 Plus CE ROM is about 4 MB.',
-    );
-    await page.getByRole('button', { name: 'Cancel' }).click();
     await page
       .locator('[data-key="ENTER"]')
       .dispatchEvent('pointerdown', { pointerId: 3, button: 0, pointerType: 'mouse' });
@@ -252,30 +176,46 @@ test.describe('ROM panel', () => {
       .dispatchEvent('pointerup', { pointerId: 3, button: 0, pointerType: 'mouse' });
   });
 
-  test('Remove deletes the ROM and the saved state, and the first-visit panel returns after a reload', async ({
-    page,
-  }) => {
+  test('saves the state when the tab hides and restores it on the next load', async ({ page }) => {
     await openCalculator(page);
     await loadSyntheticRom(page);
-    await page.getByRole('button', { name: 'Change ROM' }).click();
-    await page.getByRole('button', { name: 'Remove' }).click();
-    await expect(page.getByRole('heading', { name: 'Load your TI-84 Plus CE ROM' })).toBeVisible();
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-boot', 'rom');
+    await hideTab(page);
+    await expect
+      .poll(
+        () =>
+          page.evaluate(
+            () =>
+              new Promise<number>((resolve) => {
+                const open = indexedDB.open('vertex-calculator');
+                open.onsuccess = () => {
+                  const get = open.result.transaction('kv').objectStore('kv').get('state');
+                  get.onsuccess = () => resolve(get.result ? get.result.data.byteLength : 0);
+                };
+              }),
+          ),
+        { timeout: 25_000 },
+      )
+      .toBeGreaterThan(1_000_000);
     await page.reload();
-    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'needRom');
-    await expect(page.locator('.rom-panel')).toBeVisible();
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running', { timeout: 30_000 });
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-boot', 'state');
   });
 
-  test('Replace swaps in a new valid ROM', async ({ page }) => {
-    await openCalculator(page);
-    await loadSyntheticRom(page);
-    await page.getByRole('button', { name: 'Change ROM' }).click();
-    await page
-      .getByTestId('rom-input')
-      .setInputFiles({ ...ROM_ARGS, name: 'second.rom', buffer: syntheticRomBuffer() });
-    await expect(page.locator('.rom-panel')).toHaveCount(0);
-    await page.reload();
-    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running');
-  });
+  for (const lang of LANGS) {
+    test(`${lang}: the no-ROM sentence fits the 232 x 174 LCD without scrolling`, async ({ page, problems }) => {
+      await serveRom(page, 'missing');
+      await openCalculator(page, `?lang=${lang}`);
+      await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'needRom');
+      const fits = () =>
+        page.locator('.screen-status').evaluate((el) => ({
+          overflowY: el.scrollHeight - el.clientHeight,
+          overflowX: el.scrollWidth - el.clientWidth,
+        }));
+      expect(await fits()).toEqual({ overflowY: 0, overflowX: 0 });
+      problems.length = 0; // the 404 is the point of this test
+    });
+  }
 });
 
 test.describe('loading state', () => {
@@ -327,10 +267,13 @@ test.describe('program transfer', () => {
     await expect(page.locator('.toast')).toHaveText('notes.txt is not a file Vertex can send.');
   });
 
-  test('says to load a ROM first when none is running', async ({ page }) => {
+  test('says so plainly when there is no running calculator to send to', async ({ page, problems }) => {
+    await serveRom(page, 'missing');
     await openCalculator(page);
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'needRom');
     await dropFile(page, 'HELLO.8xp', 'program bytes');
     await expect(page.locator('.toast')).toHaveText('Load a ROM before you send files.');
+    problems.length = 0; // the 404 is the point of this test
   });
 });
 

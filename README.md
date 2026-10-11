@@ -1,8 +1,8 @@
 # Vertex
 
 An ad-free TI-84 Plus CE calculator that runs in your browser. Vertex runs the real TI-OS on
-[CEmu](https://github.com/CE-Programming/CEmu), an open source emulator compiled to WebAssembly, with a ROM from
-**your own calculator**. No ads, no accounts, no tracking.
+[CEmu](https://github.com/CE-Programming/CEmu), an open source emulator compiled to WebAssembly, and boots the ROM
+**the site serves** without a click, a file or any setup. No ads, no accounts, no tracking.
 
 > Vertex is an independent project. It is not affiliated with or endorsed by Texas Instruments. TI-84 Plus CE is a trademark of Texas Instruments.
 
@@ -10,18 +10,39 @@ An ad-free TI-84 Plus CE calculator that runs in your browser. Vertex runs the r
 
 ## How it works
 
-1. Open the page. If you have loaded a ROM before, the calculator boots on its own from the copy your browser kept, with no click and no setup screen.
-2. First visit: dump a ROM from your own TI-84 Plus CE with the ROM dump wizard in CEmu, then choose the file or drop it on the screen. One step, and it boots on its own.
-3. Vertex checks it with CEmu, stores it in your browser (IndexedDB), asks the browser to keep that storage, and boots. The ROM never leaves your browser.
-4. Use the on-screen keys, a touchscreen or your keyboard. Drop a `.8xp` (or any TI variable file) on the calculator to send it.
-5. Close the tab and come back. The calculator boots straight into the screen you left, with no click.
+1. Open the page. The calculator boots on its own from the ROM the site serves. Nothing to click, no file to choose.
+2. Vertex keeps that ROM in your browser (IndexedDB) and revalidates it, so the next visit does not download it again.
+3. Use the on-screen keys, a touchscreen or your keyboard. Drop a `.8xp` (or any TI variable file) on the calculator to send it.
+4. Close the tab and come back. The calculator boots straight into the screen you left.
 
 Nothing in this repository is a calculator ROM or OS image, and nothing is downloaded from Texas Instruments.
+
+## The ROM
+
+The calculator needs a ROM: a copy of the operating system out of a real TI-84 Plus CE. **Vertex ships none.**
+
+The site owner dumps one from a calculator they own with the ROM dump wizard in CEmu and puts it where the page looks
+for it:
+
+```bash
+cp ~/Documents/TI-84-Plus-CE.rom public/rom/ti84ce.rom
+npm run build            # the file is copied to dist/rom/ti84ce.rom
+```
+
+`public/rom/README.md` covers this in full, including `VITE_ROM_URL` for serving it from another path or host.
+
+Texas Instruments owns that operating system. Its licence lets the owner of a calculator keep one archive copy, does
+not allow use on an emulator the owner did not obtain from TI, and does not allow distribution. So a ROM is never
+committed (`*.rom` is in `.gitignore`), never published, and never fetched from a ROM archive or from TI.
+
+**A site with no ROM says so.** The screen shows one sentence, "This site has no ROM installed yet, so the calculator
+cannot boot." There is no fake boot, no simulated screen and no file picker: visitors are never asked for a file.
 
 ## Running locally
 
 ```bash
 npm install
+cp your-own-dump.rom public/rom/ti84ce.rom   # optional: without it the screen says so
 npm run dev          # http://localhost:5173
 npm run check        # typecheck, lint, unit tests, build, forbidden-content scan
 npm run test:e2e     # builds, then Playwright (Chromium, Firefox, WebKit desktop, iPad, iPhone, phone viewport)

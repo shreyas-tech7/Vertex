@@ -240,14 +240,6 @@ export const es: Strings = {
     zoomOut: 'Reducir',
     zoomIn: 'Ampliar',
     zoomLabel: 'Nivel de zoom',
-    romHeading: 'Carga tu ROM de la TI-84 Plus CE',
-    romDrop: 'Suelta aquí tu archivo ROM. Nunca sale de tu navegador.',
-    romChoose: 'Elegir archivo ROM',
-    romHint: 'Crea una ROM de tu propia calculadora con el {link}.',
-    romHintLink: 'asistente de volcado de ROM de CEmu',
-    romGuideTitle: 'Cómo obtener una ROM de tu propia calculadora',
-    romGuide:
-      'Conecta tu propia TI-84 Plus CE a un ordenador, abre CEmu y usa su asistente de volcado para escribir un archivo ROM. Guarda ese archivo. Vertex no tiene ninguna ROM y no puede darte una.',
     installTitle: 'Mantén tu ROM en este dispositivo',
     installBody:
       'Safari puede borrar los datos de un sitio que no has abierto en un tiempo. Añade Vertex a la pantalla de inicio para que conserve tu ROM. Toca Compartir y luego Añadir a la pantalla de inicio.',
@@ -255,10 +247,6 @@ export const es: Strings = {
     restoring: 'Se restauró tu ROM desde este navegador.',
     unsupported:
       'Este navegador no puede ejecutar la calculadora porque le falta una función que necesita el emulador. Prueba una versión actual de Chrome, Safari, Edge o Firefox.',
-    replace: 'Reemplazar',
-    remove: 'Quitar',
-    cancel: 'Cancelar',
-    changeRom: 'Cambiar ROM',
     checking: 'Comprobando tu ROM…',
     starting: 'Iniciando tu calculadora…',
     loading: 'Cargando el emulador…',
@@ -274,6 +262,8 @@ export const es: Strings = {
       storage: 'Tu navegador no guardó la ROM, así que tendrás que cargarla de nuevo la próxima vez.',
       crashed: 'El emulador se detuvo. Recarga la página para reiniciarlo.',
       unreadable: 'Tu navegador no pudo leer ese archivo.',
+      missing: 'Este sitio todavía no tiene una ROM instalada, por eso la calculadora no puede arrancar.',
+      offline: 'No se pudo descargar la ROM. Revisa la conexión y vuelve a cargar la página.',
     },
     transfer: {
       sending: 'Enviando {name}…',

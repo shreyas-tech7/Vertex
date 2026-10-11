@@ -2,13 +2,16 @@ import { expect, test as base, type Locator, type Page } from '@playwright/test'
 import { buildSyntheticRom } from '../src/test-support/syntheticRom.ts';
 
 /**
- * Every test gets a page that records console errors, page errors and requests. A test fails if the page logged an
- * error or asked for anything outside the site's own origin.
+ * Every test gets a page that records console errors, page errors and requests, and one that serves the ROM the site
+ * would serve. The ROM is always the synthetic fixture: a test file, never a calculator image. A test fails if the
+ * page logged an error or asked for anything outside the site's own origin.
  */
 export const test = base.extend<{ problems: string[] }>({
   problems: [
     async ({ page, baseURL }, use) => {
       const problems: string[] = [];
+      // The site serves its ROM from this path. Nothing in the repository is a real ROM, so the tests stand one in.
+      await serveRom(page);
       const own = new URL(baseURL!).origin;
       page.on('console', (message) => {
         if (message.type() === 'error') problems.push(`console error: ${message.text()}`);
@@ -30,17 +33,46 @@ export { expect };
 
 export const ROM_ARGS = { name: 'synthetic.rom', mimeType: 'application/octet-stream' } as const;
 
+/** Where the calculator asks for its ROM, and the route the tests answer it with. */
+export const ROM_URL = 'rom/ti84ce.rom';
+const ROM_ROUTE = `**/${ROM_URL}`;
+const ROM_ETAG = '"vertex-synthetic-fixture"';
+const ROM_LAST_MODIFIED = 'Mon, 01 Jan 2024 00:00:00 GMT';
+
 export const syntheticRomBuffer = (): Buffer => Buffer.from(buildSyntheticRom());
+
+/**
+ * Stands in for the ROM the site serves: `ok` (default), `missing` (404), `offline` (the request fails) or
+ * `invalid` (four megabytes of nothing). `ok` answers 304 to a conditional request, exactly as a real host would.
+ */
+export async function serveRom(page: Page, mode: 'ok' | 'missing' | 'offline' | 'invalid' = 'ok'): Promise<void> {
+  await page.unroute(ROM_ROUTE);
+  await page.route(ROM_ROUTE, async (route) => {
+    if (mode === 'offline') return route.abort('failed');
+    if (mode === 'missing') return route.fulfill({ status: 404, body: 'not found' });
+    if (mode === 'invalid') return route.fulfill({ status: 200, body: Buffer.alloc(0x400000) });
+    if (route.request().headers()['if-none-match'] === ROM_ETAG)
+      return route.fulfill({ status: 304, headers: { etag: ROM_ETAG, 'last-modified': ROM_LAST_MODIFIED } });
+    return route.fulfill({
+      status: 200,
+      headers: {
+        'content-type': 'application/octet-stream',
+        etag: ROM_ETAG,
+        'last-modified': ROM_LAST_MODIFIED,
+      },
+      body: syntheticRomBuffer(),
+    });
+  });
+}
 
 export async function openCalculator(page: Page, query = ''): Promise<void> {
   await page.goto(`/calculator.html${query}`);
   await expect(page.locator('.calc-body')).toBeVisible();
 }
 
-/** Picks the synthetic ROM in the panel and waits for the calculator to run. */
+/** Waits for the calculator to boot on its own from the ROM the site serves. */
 export async function loadSyntheticRom(page: Page): Promise<void> {
-  await page.getByTestId('rom-input').setInputFiles({ ...ROM_ARGS, buffer: syntheticRomBuffer() });
-  await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running');
+  await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running', { timeout: 30_000 });
   await expect(page.locator('.rom-panel')).toHaveCount(0);
 }
 

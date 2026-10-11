@@ -15,6 +15,7 @@ src/site/           the static pages
   csp.ts, support.ts     the Content Security Policy, header files, robots.txt, sitemap.xml
 src/calculator/     the calculator page (React): calculator.html
   emulator/              protocol, worker (thin), runner (60 fps loop, testable), client, EmulatorCore, KeyScheduler
+  romSource.ts           where the ROM comes from: the file the site serves, fetched and revalidated
   useCalculator.ts       storage, boot, pause, saving, drag and drop
   Keypad.tsx, keypadLayout.ts   the original keypad: 50 keys, legends, arrow pad
   keyboard.ts, keyHolders.ts    physical keyboard and pointer input, shared key ownership
@@ -35,8 +36,9 @@ e2e/                Playwright: ROM panel, input, zoom, iframe, languages, conso
  IndexedDB ◄── state image ◄───────────── saveState ◄─────────────── vertex_save_state
 ```
 
-- The ROM is validated by CEmu itself (`emu_load`) in a second instance, stored in IndexedDB, then booted.
-  It never leaves the browser.
+- The ROM is the file the site serves (`rom/ti84ce.rom`). The page fetches it, preflights it, boots it with CEmu's own
+  `emu_load`, and keeps a copy in IndexedDB so later visits revalidate instead of downloading it again. It is never
+  asked of the visitor: there is no file input anywhere in the page.
 - The worker steps one frame (1/60 s of emulated time, 800,000 cycles of the 48 MHz CPU) per tick and drops
   time it cannot make up. Frames are posted only when the picture changes. The panel gamma and backlight level are
   already in the pixels, so 2nd plus the arrows changes the brightness on the canvas.
@@ -50,4 +52,5 @@ e2e/                Playwright: ROM panel, input, zoom, iframe, languages, conso
 - **Original look, exact layout.** Key positions, legends and matrix codes follow the hardware and CEmu. Colors, shapes and
   the body are Vertex's own. No TI art, logo or wordmark.
 - **Everything is self-hosted.** The CSP allows scripts from self and `'wasm-unsafe-eval'` only.
-- **No ROM in the repository, ever.** `.gitignore` and `npm run scan` enforce it.
+- **No ROM in the repository, ever.** `.gitignore` and `npm run scan` enforce it. A site with no ROM says so in one
+  sentence inside the screen. It does not pretend to boot.

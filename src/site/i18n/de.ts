@@ -243,14 +243,6 @@ export const de: Strings = {
     zoomOut: 'Verkleinern',
     zoomIn: 'Vergrößern',
     zoomLabel: 'Zoomstufe',
-    romHeading: 'Lade deine TI-84 Plus CE ROM',
-    romDrop: 'Ziehe deine ROM-Datei hierher. Sie verlässt nie deinen Browser.',
-    romChoose: 'ROM-Datei wählen',
-    romHint: 'Erstelle eine ROM von deinem eigenen Rechner mit dem {link}.',
-    romHintLink: 'ROM-Dump-Assistenten in CEmu',
-    romGuideTitle: 'So bekommst du eine ROM von deinem eigenen Rechner',
-    romGuide:
-      'Verbinde deine eigene TI-84 Plus CE mit einem Computer, öffne CEmu und schreibe mit dem ROM-Dump-Assistenten eine ROM-Datei auf deine Festplatte. Behalte diese Datei. Vertex hat keine ROM und kann dir keine geben.',
     installTitle: 'Behalte deine ROM auf diesem Gerät',
     installBody:
       'Safari kann den Speicher einer Website löschen, die du länger nicht geöffnet hast. Füge Vertex zum Home-Bildschirm hinzu, damit deine ROM bleibt. Tippe auf Teilen, dann auf Zum Home-Bildschirm.',
@@ -258,10 +250,6 @@ export const de: Strings = {
     restoring: 'Deine ROM wurde aus diesem Browser wiederhergestellt.',
     unsupported:
       'Dieser Browser kann den Rechner nicht starten, weil eine Funktion fehlt, die der Emulator braucht. Versuche eine aktuelle Version von Chrome, Safari, Edge oder Firefox.',
-    replace: 'Ersetzen',
-    remove: 'Entfernen',
-    cancel: 'Abbrechen',
-    changeRom: 'ROM wechseln',
     checking: 'Deine ROM wird geprüft…',
     starting: 'Dein Rechner startet…',
     loading: 'Der Emulator wird geladen…',
@@ -276,6 +264,8 @@ export const de: Strings = {
       storage: 'Dein Browser hat die ROM nicht gespeichert. Du musst sie beim nächsten Mal erneut laden.',
       crashed: 'Der Emulator wurde angehalten. Lade die Seite neu, um ihn zu starten.',
       unreadable: 'Dein Browser konnte diese Datei nicht lesen.',
+      missing: 'Auf dieser Seite ist noch keine ROM installiert, daher kann der Rechner nicht starten.',
+      offline: 'Die ROM konnte nicht geladen werden. Prüfe die Verbindung und lade die Seite neu.',
     },
     transfer: {
       sending: '{name} wird gesendet…',

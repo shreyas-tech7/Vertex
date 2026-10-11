@@ -1,10 +1,16 @@
+/**
+ * The startup contract: a visitor opens Vertex and lands on a running calculator with nothing to click. The ROM
+ * comes from the file the site serves, cached in this browser for the visits after the first.
+ *
+ * Every ROM here is the synthetic fixture, which is a test file, not a calculator image. No real TI-OS or TI ROM is
+ * involved anywhere in this suite.
+ */
 import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { buildSyntheticRom } from '../src/test-support/syntheticRom.ts';
 import {
   MATRIX_EMPTY,
-  ROM_ARGS,
+  ROM_URL,
   expect,
   expectMatrix,
   keyPoint,
@@ -12,6 +18,7 @@ import {
   openCalculator,
   readStored,
   seedStoredRom,
+  serveRom,
   test,
 } from './support.ts';
 
@@ -22,70 +29,87 @@ import {
  */
 
 test.describe('first run', () => {
-  test('shows the calculator frame at once, with one ROM step and no other setup', async ({ page }) => {
+  test('shows the calculator frame at once and boots with nothing to click', async ({ page }) => {
     await openCalculator(page);
-    // The case, the keypad and the LCD are on screen before anything is asked of the visitor.
+    // The case, the keypad and the LCD are on screen before anything could be asked of the visitor.
     await expect(page.locator('.calc-body')).toBeVisible();
     await expect(page.locator('.keypad [data-key]')).toHaveCount(50);
     await expect(page.getByLabel('Calculator screen')).toBeVisible();
-    // One step: a picker. The panel sits over the LCD and asks for nothing else.
-    const chooser = page.getByRole('button', { name: 'Choose ROM file' });
-    await expect(chooser).toBeVisible();
-    await expect(page.locator('.rom-panel')).toBeVisible();
-    // No multi-step wizard, no engine picker, no Next button.
-    await expect(page.getByRole('button', { name: /next|continue|skip/i })).toHaveCount(0);
+    // No multi-step wizard, no engine picker, no Next button, and no upload of any kind.
+    await expect(page.getByRole('button', { name: /next|continue|skip|choose|replace|remove/i })).toHaveCount(0);
+    await expect(page.locator('input[type=file]')).toHaveCount(0);
+    await expect(page.locator('.rom-panel')).toHaveCount(0);
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running', { timeout: 30_000 });
   });
 
-  test('the file picker accepts any file, so iOS does not refuse the extension', async ({ page }) => {
+  test('is usable the moment it boots: a key press reaches the emulated keypad', async ({ page }) => {
     await openCalculator(page);
-    // An accept attribute naming .rom would make iOS show the file greyed out. Vertex validates the contents itself.
-    await expect(page.getByTestId('rom-input')).not.toHaveAttribute('accept', /rom|8xu|\./);
-    await expect(page.getByTestId('rom-input')).toHaveJSProperty('type', 'file');
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running', { timeout: 30_000 });
+    const point = await keyPoint(page.locator('[data-key="ENTER"]'));
+    await page.mouse.move(point.x, point.y);
+    await page.mouse.down();
+    await expectMatrix(page, matrixOnly(6, 0));
+    await page.mouse.up();
+    await expectMatrix(page, MATRIX_EMPTY);
   });
 });
 
-test.describe('invalid ROM', () => {
-  const cases = [
-    { name: 'empty.rom', bytes: Buffer.alloc(0), text: /file is empty/i },
-    { name: 'tiny.rom', bytes: Buffer.from('this is not a calculator ROM'), text: /too small/i },
-    { name: 'zeroed.rom', bytes: Buffer.alloc(0x400000), text: /not a TI-84 Plus CE ROM/i },
-    { name: 'huge.rom', bytes: Buffer.alloc(0x2000001), text: /too big/i },
-  ];
-
-  for (const item of cases) {
-    test(`${item.name} is refused with one plain sentence and no dead screen`, async ({ page }) => {
-      await openCalculator(page);
-      await page.getByTestId('rom-input').setInputFiles({ ...ROM_ARGS, name: item.name, buffer: item.bytes });
-      const message = page.locator('.rom-error');
-      await expect(message).toHaveText(item.text);
-      // The sentence tells the visitor what to do next, and the way back is still on screen.
-      await expect(message).toContainText(/choose the rom|about 4 mb/i);
-      await expect(page.locator('.rom-panel')).toBeVisible();
-      await expect(page.getByRole('button', { name: 'Choose ROM file' })).toBeEnabled();
-      await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'needRom');
-      // Nothing was stored, so the next load is a clean first run again.
-      expect(await readStored<{ size: number }>(page, 'rom')).toBeNull();
-    });
-  }
+test.describe('ROM paths', () => {
+  test('the ROM comes from the path the site serves, and nothing else is fetched', async ({ page }) => {
+    const urls: string[] = [];
+    page.on('request', (request) => urls.push(request.url()));
+    await openCalculator(page);
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running', { timeout: 30_000 });
+    expect(urls.filter((url) => url.endsWith('/rom/ti84ce.rom'))).toHaveLength(1);
+    // The ROM is one file on our own origin. No ROM host, no Texas Instruments host, nothing third party.
+    expect(urls.filter((url) => !url.startsWith('http://localhost:4173/'))).toEqual([]);
+  });
 
   test('the synthetic fixture is accepted, so the checks reject bad files and not good ones', async ({
     page,
   }) => {
     await openCalculator(page);
-    await page
-      .getByTestId('rom-input')
-      .setInputFiles({ ...ROM_ARGS, buffer: Buffer.from(buildSyntheticRom()) });
-    await expect(page.locator('.rom-error')).toHaveText('');
-    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running');
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running', { timeout: 30_000 });
+    await expect(page.locator('.screen-status, .screen-failed')).toHaveCount(0);
+  });
+
+  const refused = [
+    { name: 'zeroed', mode: 'invalid' as const, text: /not a TI-84 Plus CE ROM/i },
+    { name: 'missing', mode: 'missing' as const, text: /no ROM installed/i },
+    { name: 'offline', mode: 'offline' as const, text: /could not be downloaded/i },
+  ];
+
+  for (const item of refused) {
+    test(`${item.name}: one plain sentence inside the screen, never a dead screen and never a picker`, async ({
+      page,
+      problems,
+    }) => {
+      await serveRom(page, item.mode);
+      await openCalculator(page);
+      await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'needRom');
+      await expect(page.locator('.screen-status')).toContainText(item.text);
+      await expect(page.locator('input[type=file]')).toHaveCount(0);
+      await expect(page.locator('.rom-panel')).toHaveCount(0);
+      await expect(page.locator('.keypad [data-key]')).toHaveCount(50);
+      problems.length = 0; // the missing or failed ROM is the point of this test
+    });
+  }
+
+  test('an unreachable ROM boots the copy this browser kept', async ({ page, problems }) => {
+    await openCalculator(page);
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running', { timeout: 30_000 });
+    await serveRom(page, 'offline');
+    await page.reload();
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running', { timeout: 30_000 });
+    await expect(page.locator('.toast')).toContainText('could not be downloaded');
+    problems.length = 0; // the failed request is the point of this test
   });
 });
 
 test.describe('stored ROM', () => {
-  test('boots on its own from a ROM already in IndexedDB, with no click and no ROM screen', async ({
-    page,
-  }) => {
+  test('a ROM already in IndexedDB boots the calculator with no click and no ROM screen', async ({ page }) => {
     await seedStoredRom(page);
-    // Watch the page from its first script, so a panel that came and went cannot hide.
+    // Watch the page from its first script, so a step that came and went cannot hide.
     await page.addInitScript(() => {
       const record = window as unknown as { phases: string[]; panels: number };
       record.phases = [];
@@ -93,7 +117,7 @@ test.describe('stored ROM', () => {
       new MutationObserver(() => {
         const phase = document.querySelector('.calc-body')?.getAttribute('data-phase');
         if (phase && record.phases.at(-1) !== phase) record.phases.push(phase);
-        record.panels = Math.max(record.panels, document.querySelectorAll('.rom-panel').length);
+        record.panels = Math.max(record.panels, document.querySelectorAll('.rom-panel, input[type=file]').length);
       }).observe(document, {
         subtree: true,
         childList: true,
@@ -109,23 +133,12 @@ test.describe('stored ROM', () => {
     });
     expect(seen.phases).not.toContain('needRom');
     expect(seen.panels).toBe(0);
-    await expect(page.locator('.rom-panel')).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Change ROM' })).toBeVisible();
-    // Usable right away: a key press reaches the emulated keypad without any further setup.
-    const point = await keyPoint(page.locator('[data-key="ENTER"]'));
-    await page.mouse.move(point.x, point.y);
-    await page.mouse.down();
-    await expectMatrix(page, matrixOnly(6, 0));
-    await page.mouse.up();
-    await expectMatrix(page, MATRIX_EMPTY);
   });
 
-  test('restores the saved state as well, and says the ROM came from this browser', async ({ page }) => {
-    await seedStoredRom(page);
+  test('restores the saved state as well, and says so once', async ({ page }) => {
     await openCalculator(page);
-    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running');
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running', { timeout: 30_000 });
     await expect(page.locator('.calc-body')).toHaveAttribute('data-boot', 'rom');
-    await expect(page.locator('.toast')).toContainText('Restored your ROM from this browser');
     // Hiding the tab saves the whole state. The next load comes back from it, not from the ROM again.
     await page.evaluate(() => {
       Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
@@ -135,48 +148,30 @@ test.describe('stored ROM', () => {
       .poll(async () => (await readStored(page, 'state'))?.bytes ?? 0, { timeout: 25_000 })
       .toBeGreaterThan(1_000_000);
     await page.reload();
-    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running');
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running', { timeout: 30_000 });
     await expect(page.locator('.calc-body')).toHaveAttribute('data-boot', 'state');
   });
 
-  test('keeps the ROM in IndexedDB as an ArrayBuffer, and survives a reload and a new tab', async ({
-    page,
-    context,
-  }) => {
+  test('keeps the ROM in IndexedDB, and survives a reload and a new tab', async ({ page, context }) => {
     await openCalculator(page);
-    await page
-      .getByTestId('rom-input')
-      .setInputFiles({ ...ROM_ARGS, name: 'mine.rom', buffer: Buffer.from(buildSyntheticRom()) });
-    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running');
-    const stored = await readStored<{ name: string; size: number }>(page, 'rom');
-    expect(stored?.name).toBe('mine.rom');
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running', { timeout: 30_000 });
+    const stored = await readStored<{ size: number; source: string }>(page, 'rom');
     expect(stored?.size).toBe(0x400000);
+    expect(stored?.source).toBe(ROM_URL);
     expect(stored?.bytes).toBe(0x400000);
-    // A Blob would not survive as bytes. IndexedDB hands back an ArrayBuffer, which is what CEmu needs.
-    expect(
-      await page.evaluate(() => {
-        const open = indexedDB.open('vertex-calculator');
-        return new Promise<string>((resolve) => {
-          open.onsuccess = () => {
-            const get = open.result.transaction('kv').objectStore('kv').get('rom');
-            get.onsuccess = () => resolve(Object.prototype.toString.call(get.result.data));
-          };
-        });
-      }),
-    ).toBe('[object ArrayBuffer]');
 
     await page.reload();
-    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running');
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running', { timeout: 30_000 });
     // A new tab in the same browser profile is what a browser restart looks like to a web app.
     const second = await context.newPage();
     await second.goto('/calculator.html');
-    await expect(second.locator('.calc-body')).toHaveAttribute('data-phase', 'running');
-    expect(await readStored<{ name: string }>(second, 'rom')).toMatchObject({ name: 'mine.rom' });
+    await expect(second.locator('.calc-body')).toHaveAttribute('data-phase', 'running', { timeout: 30_000 });
+    expect(await readStored<{ size: number }>(second, 'rom')).toMatchObject({ size: 0x400000 });
   });
 
-  test('asks the browser to keep the storage after a successful import', async ({ page }) => {
+  test('asks the browser to keep the storage after a successful boot', async ({ page }) => {
     await page.addInitScript(() => {
-      const scope = window as unknown as { persistCalls: number; persistResult: unknown };
+      const scope = window as unknown as { persistCalls: number };
       scope.persistCalls = 0;
       const storage = navigator.storage as { persist?: () => Promise<boolean> } | undefined;
       if (!storage?.persist) return;
@@ -187,10 +182,7 @@ test.describe('stored ROM', () => {
       };
     });
     await openCalculator(page);
-    await page
-      .getByTestId('rom-input')
-      .setInputFiles({ ...ROM_ARGS, buffer: Buffer.from(buildSyntheticRom()) });
-    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running');
+    await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'running', { timeout: 30_000 });
     // Safari has no navigator.storage.persist. Where it exists, Vertex asks.
     const has = await page.evaluate(() => typeof navigator.storage?.persist === 'function');
     if (has) {
@@ -204,6 +196,7 @@ test.describe('stored ROM', () => {
 
   test('a stored ROM that cannot be one is reported instead of hanging on a blank screen', async ({
     page,
+    problems,
   }) => {
     await page.addInitScript(() => {
       const open = indexedDB.open('vertex-calculator');
@@ -220,10 +213,13 @@ test.describe('stored ROM', () => {
           );
       };
     });
+    // The site itself has nothing to serve, so the broken record is all there is.
+    await serveRom(page, 'missing');
     await page.goto('/calculator.html');
     await expect(page.locator('.calc-body')).toHaveAttribute('data-phase', 'needRom');
-    await expect(page.locator('.rom-error')).toContainText(/too small/i);
-    await expect(page.getByRole('button', { name: 'Choose ROM file' })).toBeVisible();
+    await expect(page.locator('.screen-status')).toContainText(/too small/i);
+    await expect(page.locator('input[type=file]')).toHaveCount(0);
+    problems.length = 0; // the 404 that forced the broken record out is the point of this test
   });
 });
 

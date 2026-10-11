@@ -19,11 +19,9 @@ test.describe('every page loads cleanly', () => {
       if (page.kind === 'home') {
         const frame = browser.frameLocator('#calculatorFrame');
         await expect(frame.locator('.calc-body')).toBeVisible();
-        await expect(
-          frame.getByRole('heading', {
-            name: STRINGS[page.lang].calc.romHeading.replace('{brand}', 'Vertex'),
-          }),
-        ).toBeVisible();
+        // The embedded calculator boots itself. Nothing in it ever asks the visitor for a file.
+        await expect(frame.locator('input[type=file]')).toHaveCount(0);
+        await expect(frame.locator('.rom-panel')).toHaveCount(0);
       }
     });
   }
@@ -59,8 +57,9 @@ test.describe('language dropdown', () => {
     await expect(page).toHaveURL(/\/fr\/$/);
     await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
     const frame = page.frameLocator('#calculatorFrame');
-    await expect(frame.getByRole('heading', { name: 'Chargez votre ROM TI-84 Plus CE' })).toBeVisible();
-    await expect(frame.getByRole('button', { name: 'Choisir un fichier ROM' })).toBeVisible();
+    // The calculator boots itself in the visitor's language, and never asks for a file.
+    await expect(frame.locator('.calc-body')).toHaveAttribute('data-phase', 'running', { timeout: 30_000 });
+    await expect(frame.locator('input[type=file]')).toHaveCount(0);
   });
 
   test('the menu closes on Escape and on an outside click', async ({ page }) => {

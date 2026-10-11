@@ -237,14 +237,6 @@ export const en: Strings = {
     zoomOut: 'Zoom out',
     zoomIn: 'Zoom in',
     zoomLabel: 'Zoom level',
-    romHeading: 'Load your TI-84 Plus CE ROM',
-    romDrop: 'Drop your ROM file here. It never leaves your browser.',
-    romChoose: 'Choose ROM file',
-    romHint: 'Make a ROM from your own calculator with the {link}.',
-    romHintLink: 'ROM dump wizard in CEmu',
-    romGuideTitle: 'How to get a ROM from your own calculator',
-    romGuide:
-      'Connect your own TI-84 Plus CE to a computer, open CEmu, and use its ROM dump wizard to write a ROM file to your disk. Keep that file. Vertex has no ROM and cannot give you one.',
     installTitle: 'Keep your ROM on this device',
     installBody:
       'Safari can clear the storage of a site you have not opened for a while. Add Vertex to your Home Screen so it keeps your ROM. Tap Share, then Add to Home Screen.',
@@ -252,10 +244,6 @@ export const en: Strings = {
     restoring: 'Restored your ROM from this browser.',
     unsupported:
       'This browser cannot run the calculator because a feature the emulator needs is missing. Try a current version of Chrome, Safari, Edge or Firefox.',
-    replace: 'Replace',
-    remove: 'Remove',
-    cancel: 'Cancel',
-    changeRom: 'Change ROM',
     checking: 'Checking your ROM…',
     starting: 'Starting your calculator…',
     loading: 'Loading the emulator…',
@@ -270,6 +258,8 @@ export const en: Strings = {
       storage: 'Your browser would not store the ROM, so you will need to load it again next time.',
       crashed: 'The emulator stopped. Reload the page to restart it.',
       unreadable: 'Your browser could not read that file.',
+      missing: 'This site has no ROM installed yet, so the calculator cannot boot.',
+      offline: 'The ROM could not be downloaded. Check the connection and reload the page.',
     },
     transfer: {
       sending: 'Sending {name}…',

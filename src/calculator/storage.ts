@@ -9,6 +9,11 @@ export interface StoredRom {
   size: number;
   data: ArrayBuffer;
   savedAt: number;
+  /** Where this ROM was served from, and what the server said about it. Empty on a ROM dropped in by hand. */
+  source?: string;
+  /** The ETag of the served file, sent back as `If-None-Match` next time so an unchanged ROM is not downloaded. */
+  etag?: string;
+  lastModified?: string;
 }
 
 export interface StoredState {
@@ -80,14 +85,27 @@ export class CalculatorStorage {
     return rom && rom.data instanceof ArrayBuffer && rom.data.byteLength > 0 ? rom : undefined;
   }
 
-  /** Saves a new ROM and drops the state that belonged to the old one. */
-  async putRom(name: string, data: ArrayBuffer): Promise<void> {
+  /**
+   * Saves a ROM and drops the state that belonged to the old one.
+   *
+   * `source` is the URL the ROM was served from, with the `etag` and `lastModified` the server sent, so the next
+   * visit can revalidate with `If-None-Match` instead of downloading four megabytes again. A ROM dropped in by hand
+   * has none of the three.
+   */
+  async putRom(
+    name: string,
+    data: ArrayBuffer,
+    origin: { source?: string; etag?: string; lastModified?: string } = {},
+  ): Promise<void> {
     await this.backend.del(STATE_KEY);
     await this.backend.set(ROM_KEY, {
       name,
       size: data.byteLength,
       data,
       savedAt: Date.now(),
+      source: origin.source,
+      etag: origin.etag,
+      lastModified: origin.lastModified,
     } satisfies StoredRom);
   }
 
