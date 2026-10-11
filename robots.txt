@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://shreyas-tech7.github.io/Vertex/sitemap.xml
