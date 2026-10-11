@@ -94,3 +94,38 @@ Format: `- [Mx] topic — decision (reason)`.
 - [R3] Network scan hardening : `scripts/network-log.mjs` now fails on any request to a Texas Instruments education host or to the test delivery host, not only on requests that leave the origin.
 - [R3] WebKit : no WebKit binary can be downloaded here, so the webkit, ipad and iphone projects are written and skip themselves with a printed warning. Their rows in the matrix are NOT CHECKED.
 - [R3] Chromium for tests : `scripts/fetch-chromium.mjs` pulls Chromium from the npm registry, the only browser host that answers from this sandbox, and writes a wrapper that sets `LD_LIBRARY_PATH`. Nothing lands in the repository: the browser lives in the gitignored `.cache/`.
+
+## R4 The site serves the ROM
+
+- [R4] Branch — this round is on `arena/68c73bc5-vertex`, branched from `main` at `285aac7`. One PR into `main`.
+- [R4] No ROM was downloaded — the task asked for a ROM from the internet "only when the source authorizes the
+  acquisition and intended use". None does. The operating system in a TI-84 Plus CE is Texas Instruments' copyrighted
+  software: its licence grants the owner of a calculator one archive copy, forbids use on an emulator the owner did not
+  obtain from TI, and forbids distribution (the licence Texas Instruments ships with the operating system, and the
+  knowledge base answer it publishes on copying ROM code). Every site that offers a CE ROM is redistributing it
+  without that permission. So nothing was
+  fetched from a ROM archive, nothing was taken from a third-party host, and no ROM was committed, embedded or
+  generated. The site still holds none.
+- [R4] Where the ROM comes from — one file the site serves, `rom/ti84ce.rom` relative to the page
+  (`src/calculator/romSource.ts`). `VITE_ROM_URL` points it elsewhere at build time. The owner puts their own dump
+  there; `public/rom/README.md` says how and what the licence allows.
+- [R4] Boot order — the served ROM first, the copy in IndexedDB second, one sentence in the screen last. A host that
+  answers 404, or a request that fails, falls back to the copy this browser kept and boots it, with a quiet toast.
+  With neither, `data-phase="needRom"` shows `strings.errors.missing` inside the LCD. No fake boot, no fake screen.
+- [R4] Caching — the ROM is stored in IndexedDB with the `etag` and `last-modified` the server sent, and the next
+  visit revalidates with `If-None-Match` instead of downloading four megabytes again. A 304 keeps the stored bytes.
+  The ROM is only written when it changed, because writing it drops the saved state that belongs to the old one.
+- [R4] No upload interface — `src/calculator/RomPanel.tsx` is deleted, and with it the file input, the drop zone, the
+  dump wizard link and the Change ROM button. The page has no `input[type=file]` at all, which the tests assert.
+  Dropping a `.rom` file on the calculator still replaces the ROM: that is the owner's back door, and nothing in the
+  interface mentions it.
+- [R4] Keys and case — the caps are drawn as moulded blocks (vertical gradient, hairline top highlight, seam and drop
+  shadow, an inner shadow when pressed) and keep the hardware's colour coding: light gray for the graphing keys, the
+  four operators and ENTER, white digits, blue 2nd, green ALPHA, dark for the rest, blue 2nd legends and green ALPHA
+  legends on the case. The case is charcoal plastic lit from above, and the LCD sits in a recessed bezel under glass.
+  All of it is Vertex's own drawing: no TI artwork, logo or wordmark is copied, and the brand line above the screen
+  names Vertex.
+- [R4] Tests — `e2e/support.ts` answers `**/rom/ti84ce.rom` with the synthetic fixture for every test, so the whole
+  suite runs as a site that has a ROM. `serveRom(page, mode)` switches it to `missing`, `offline` or `invalid` for the
+  tests that need a site without one. `src/calculator/romSource.test.ts` covers the fetch, the 304 path and every
+  failure with a stubbed `fetch`.

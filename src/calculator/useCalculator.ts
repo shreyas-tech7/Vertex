@@ -9,11 +9,19 @@ import { canRunEmulator, detectFeatures, type DetectedFeatures } from './feature
 import { KeyHolders } from './keyHolders.ts';
 import { KeyboardController } from './keyboard.ts';
 import { preflightRom } from './romCheck.ts';
-import { CalculatorStorage, persistBrowserStorage } from './storage.ts';
+import { downloadRom, romUrl, sameVersion, type RomVersion } from './romSource.ts';
+import { CalculatorStorage, persistBrowserStorage, type StoredRom } from './storage.ts';
 
 export type Phase = 'starting' | 'needRom' | 'running' | 'failed' | 'unsupported';
 export type Busy = 'checking' | 'booting' | null;
-type ErrorKey = RomRejection | 'storage' | 'crashed' | 'unreadable';
+type ErrorKey = RomRejection | 'storage' | 'crashed' | 'unreadable' | 'missing' | 'offline';
+
+/** The ETag and Last-Modified of a ROM in storage, in the shape the conditional request wants. */
+function cachedVersion(rom: StoredRom | undefined, url: string): RomVersion | undefined {
+  if (!rom || rom.source !== url) return undefined;
+  if (!rom.etag && !rom.lastModified) return undefined;
+  return { size: rom.size, etag: rom.etag ?? '', lastModified: rom.lastModified ?? '' };
+}
 
 export interface Toast {
   text: string;
@@ -29,7 +37,6 @@ let autoBootStarted = false;
 /** Runs the whole calculator page: storage, the emulator worker, input and saving. */
 export function useCalculator(strings: CalcStrings, brand: string) {
   const [hasRom, setHasRom] = useState(false);
-  const [panelOpen, setPanelOpen] = useState(false);
   const [busy, setBusy] = useState<Busy>(null);
   const [error, setError] = useState<ErrorKey | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
@@ -50,10 +57,10 @@ export function useCalculator(strings: CalcStrings, brand: string) {
   const saving = useRef<Promise<void> | null>(null);
   const dirty = useRef(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const live = useRef({ phase, panelOpen });
+  const live = useRef({ phase });
   useEffect(() => {
-    live.current = { phase, panelOpen };
-  }, [phase, panelOpen]);
+    live.current = { phase };
+  }, [phase]);
 
   const holders = useMemo(
     () =>
@@ -87,13 +94,6 @@ export function useCalculator(strings: CalcStrings, brand: string) {
     );
   }, []);
 
-  const blankScreen = useCallback(() => {
-    const context = canvas.current?.getContext('2d');
-    if (!context) return;
-    context.fillStyle = '#000';
-    context.fillRect(0, 0, LCD_WIDTH, LCD_HEIGHT);
-  }, []);
-
   /** Writes the emulator's state to IndexedDB. Safe to call often: calls that overlap share one save. */
   const saveNow = useCallback((): Promise<void> => {
     const client = clientRef.current;
@@ -120,12 +120,14 @@ export function useCalculator(strings: CalcStrings, brand: string) {
   /**
    * Start up. Nothing here waits for a click.
    *
-   * The worker was already started before React ran, so this only reads the visitor's ROM from IndexedDB, checks it,
-   * and boots. The two reads (ROM and saved state) and the WebAssembly compile all run at the same time.
+   * The worker was already started before React ran, so this only gets the ROM the site serves, checks it, and boots.
+   * The download, the copy in IndexedDB and the WebAssembly compile all run at the same time.
+   *
+   * Order of preference: the ROM the site serves, then the copy this browser kept. A site that serves no ROM, and a
+   * browser that has never stored one, ends in one plain sentence inside the screen, never in a file picker.
    */
   useEffect(() => {
     const client = clientRef.current;
-    const alive = true;
     client.events = {
       frame: paint,
       keys: (next) => setRows(next),
@@ -140,46 +142,89 @@ export function useCalculator(strings: CalcStrings, brand: string) {
     autoBootStarted = true;
 
     void (async () => {
+      const url = romUrl();
       const [stored, state] = await Promise.all([
         storage.getRom().catch(() => undefined),
         storage.getState().catch(() => undefined),
       ]);
-      if (!alive) return;
-      if (!stored) {
+      const cached = stored && stored.data.byteLength > 0 ? stored : undefined;
+      const download = await downloadRom(url, cachedVersion(cached, url));
+
+      // The served file wins. Whatever is in storage is the fallback when it is gone or unreachable.
+      let bytes: ArrayBuffer | undefined = download.ok ? download.bytes : undefined;
+      let version: RomVersion | undefined = download.ok ? download.version : undefined;
+      let name = url.split('/').pop() || 'ti84ce.rom';
+      let fromCache = false;
+
+      if (!bytes && cached) {
+        bytes = cached.data;
+        version = undefined;
+        name = cached.name;
+        fromCache = true;
+      }
+      if (!bytes) {
+        // Nothing served and nothing stored: say so in the screen, and never ask the visitor for a file.
+        setError(download.ok ? 'missing' : download.reason === 'missing' ? 'missing' : download.reason);
         setPhase('needRom');
-        setPanelOpen(true);
         return;
       }
-      // A stored ROM that cannot possibly be a ROM is a broken record, not a reason to hang on a blank screen.
-      const check = preflightRom(new Uint8Array(stored.data));
-      if (!check.ok) {
-        setError(check.reason === 'unavailable' ? 'unavailable' : check.reason);
+      if (fromCache && !download.ok) {
+        // The ROM could not be reached, but an older copy boots. Say it once, quietly.
+        showToast({ text: strings.errors.offline, tone: 'info' }, 6000);
+      }
+
+      // A file that cannot possibly be a ROM is reported before the emulator is asked.
+      const quick = preflightRom(new Uint8Array(bytes));
+      if (!quick.ok) {
+        setError(quick.reason === 'unavailable' ? 'unavailable' : quick.reason);
         setPhase('needRom');
-        setPanelOpen(true);
         return;
       }
-      setHasRom(true);
+
       if (!(await client.whenReady())) {
-        if (alive) {
-          setError('unavailable');
-          setPhase('failed');
-        }
+        setError('unavailable');
+        setPhase('failed');
         return;
       }
-      const saved = state && state.romSize === stored.size ? state : undefined;
-      const result = await client.boot({ rom: stored.data, state: saved?.data });
-      if (!alive) return;
-      if (result.ok) {
-        romSize.current = stored.size;
-        setBootSource(result.from);
-        setPhase('running');
-        showToast({ text: strings.restoring, tone: 'info' }, RESTORED_TOAST_MS);
-        if (document.visibilityState === 'hidden') client.pause();
-      } else {
+
+      setBusy('booting');
+      const saved = state && state.romSize === bytes.byteLength ? state : undefined;
+      const result = await client.boot({ rom: bytes, state: saved?.data });
+      setBusy(null);
+      if (!result.ok) {
         setError(result.reason === 'noSource' ? 'unavailable' : result.reason);
         setHasRom(false);
         setPhase('needRom');
-        setPanelOpen(true);
+        return;
+      }
+
+      romSize.current = bytes.byteLength;
+      setBootSource(result.from);
+      setHasRom(true);
+      setPhase('running');
+      if (result.from === 'state') showToast({ text: strings.restoring, tone: 'info' }, RESTORED_TOAST_MS);
+      if (document.visibilityState === 'hidden') client.pause();
+
+      // Keep the served ROM, and only write it when it is not already there: re-saving would drop the saved state.
+      const served = version !== undefined ? cachedVersion(cached, url) : undefined;
+      const unchanged =
+        cached !== undefined &&
+        cached.source === url &&
+        cached.size === bytes.byteLength &&
+        (served === undefined || sameVersion(served, version));
+      if (download.ok && download.bytes && !unchanged) {
+        const stored = await storage
+          .putRom(name, download.bytes, {
+            source: url,
+            etag: version?.etag,
+            lastModified: version?.lastModified,
+          })
+          .then(() => true)
+          .catch(() => false);
+        void persistBrowserStorage();
+        if (!stored) showToast({ text: strings.errors.storage, tone: 'error' }, 8000);
+      } else if (download.ok && download.bytes) {
+        void persistBrowserStorage();
       }
     })();
   }, [paint, showToast, storage, strings, supported]);
@@ -228,7 +273,7 @@ export function useCalculator(strings: CalcStrings, brand: string) {
   // Physical keyboard. It is off while the ROM panel is open so the panel's own controls keep working.
   useEffect(() => {
     const active = (event: KeyboardEvent): boolean => {
-      if (live.current.phase !== 'running' || live.current.panelOpen) return false;
+      if (live.current.phase !== 'running') return false;
       const target = event.target as HTMLElement | null;
       return !target?.closest('input, textarea, select, [data-no-calc-keys]');
     };
@@ -248,7 +293,11 @@ export function useCalculator(strings: CalcStrings, brand: string) {
   }, [keyboard]);
 
   /**
-   * Checks a ROM, stores it, and boots it. Returns true on success.
+   * Checks a ROM dropped on the page, stores it, and boots it. Returns true on success.
+   *
+   * The site serves its own ROM, so this is the back door for the owner: dropping a `.rom` file on the calculator
+   * replaces the served one without a rebuild. No visitor is ever asked to do it, and nothing in the interface
+   * mentions it.
    *
    * The size and header check runs first, in microseconds, so a wrong file is refused before the emulator is asked.
    * What survives goes to CEmu's own checks in the worker.
@@ -302,32 +351,12 @@ export function useCalculator(strings: CalcStrings, brand: string) {
       romSize.current = buffer.byteLength;
       setBootSource('rom');
       setHasRom(true);
-      setPanelOpen(false);
       setPhase('running');
       if (!stored) showToast({ text: strings.errors.storage, tone: 'error' }, 8000);
       return true;
     },
     [showToast, storage, strings],
   );
-
-  const removeRom = useCallback(async () => {
-    const client = clientRef.current;
-    await client?.boot({});
-    try {
-      await storage.clear();
-    } catch {
-      /* nothing stored, or storage is blocked */
-    }
-    romSize.current = undefined;
-    setBootSource(null);
-    keyboard.releaseAll();
-    holders.releaseAll();
-    blankScreen();
-    setError(null);
-    setHasRom(false);
-    setPhase('needRom');
-    setPanelOpen(true);
-  }, [blankScreen, holders, keyboard, storage]);
 
   const sendFile = useCallback(
     async (file: File) => {
@@ -412,7 +441,6 @@ export function useCalculator(strings: CalcStrings, brand: string) {
   return {
     phase,
     hasRom,
-    panelOpen,
     busy,
     error,
     toast,
@@ -425,14 +453,5 @@ export function useCalculator(strings: CalcStrings, brand: string) {
     canvas,
     holders,
     loadRom,
-    removeRom,
-    openPanel: () => {
-      setError(null);
-      setPanelOpen(true);
-    },
-    closePanel: () => {
-      setError(null);
-      setPanelOpen(false);
-    },
   };
 }

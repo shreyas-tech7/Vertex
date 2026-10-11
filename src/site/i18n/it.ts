@@ -240,14 +240,6 @@ export const it: Strings = {
     zoomOut: 'Riduci',
     zoomIn: 'Ingrandisci',
     zoomLabel: 'Livello di zoom',
-    romHeading: 'Carica la tua ROM TI-84 Plus CE',
-    romDrop: 'Trascina qui il tuo file ROM. Non lascia mai il tuo browser.',
-    romChoose: 'Scegli file ROM',
-    romHint: 'Crea una ROM dalla tua calcolatrice con la {link}.',
-    romHintLink: 'procedura guidata di estrazione ROM di CEmu',
-    romGuideTitle: 'Come ottenere una ROM dalla tua calcolatrice',
-    romGuide:
-      'Collega la tua TI-84 Plus CE a un computer, apri CEmu e usa la sua procedura guidata per scrivere un file ROM. Conserva quel file. Vertex non ne ha una e non può dartene una.',
     installTitle: 'Tieni la ROM su questo dispositivo',
     installBody:
       'Safari può cancellare i dati di un sito che non apri da un po’. Aggiungi Vertex alla schermata Home, così conserva la tua ROM. Tocca Condividi, poi Aggiungi a Home.',
@@ -255,10 +247,6 @@ export const it: Strings = {
     restoring: 'ROM ripristinata da questo browser.',
     unsupported:
       'Questo browser non può avviare la calcolatrice perché manca una funzione necessaria all’emulatore. Prova una versione recente di Chrome, Safari, Edge o Firefox.',
-    replace: 'Sostituisci',
-    remove: 'Rimuovi',
-    cancel: 'Annulla',
-    changeRom: 'Cambia ROM',
     checking: 'Controllo della ROM in corso…',
     starting: 'Avvio della calcolatrice…',
     loading: 'Caricamento dell’emulatore…',
@@ -273,6 +261,8 @@ export const it: Strings = {
       storage: 'Il tuo browser non ha salvato la ROM, quindi dovrai caricarla di nuovo la prossima volta.',
       crashed: 'L’emulatore si è fermato. Ricarica la pagina per riavviarlo.',
       unreadable: 'Il tuo browser non è riuscito a leggere questo file.',
+      missing: 'Questo sito non ha ancora una ROM installata, quindi la calcolatrice non può avviarsi.',
+      offline: 'Non è stato possibile scaricare la ROM. Controlla la connessione e ricarica la pagina.',
     },
     transfer: {
       sending: 'Invio di {name} in corso…',

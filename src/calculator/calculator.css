@@ -128,23 +128,6 @@ body {
   overflow: hidden;
 }
 
-.change-rom {
-  padding: 0;
-  border: 0;
-  background: none;
-  font: inherit;
-  font-size: 12px;
-  line-height: 18px;
-  color: #777;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  cursor: pointer;
-}
-
-.change-rom:hover {
-  color: #000;
-}
-
 .notice {
   margin: 0;
   font-size: 11px;
@@ -153,14 +136,23 @@ body {
   text-align: center;
 }
 
-/* The calculator body: solid black, a small radius, almost no bezel around a wide LCD. */
+/*
+ * The calculator body: black plastic, lit from above. A vertical gradient from a charcoal face down to a near black
+ * bottom, a hairline highlight along the top edge where the case catches the light, and a soft drop shadow so the
+ * case sits above the page instead of flat on it.
+ */
 .calc-body {
   position: relative;
   width: 100%;
   height: 100%;
-  border-radius: 8px;
-  background: #000;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.2);
+  border-radius: 14px;
+  background:
+    radial-gradient(130% 55% at 50% 0%, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0) 62%),
+    linear-gradient(180deg, #2c2f34 0%, #191c20 24%, #101216 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 10px 26px rgba(0, 0, 0, 0.32);
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
@@ -172,12 +164,46 @@ body {
     0 8px 22px rgba(0, 0, 0, 0.2);
 }
 
+/* The name on the case, in the strip above the screen. */
+.calc-brand {
+  position: absolute;
+  top: 9px;
+  right: 0;
+  left: 0;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.32);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+
+/* The LCD: sunk into the case, with the black surround of the real panel and a thin glass highlight over it. */
 .screen {
   position: absolute;
-  background: #000;
-  border-radius: 2px;
-  box-shadow: 0 0 0 1px #2a2a2a;
+  background: #05070a;
+  border-radius: 3px;
+  box-shadow:
+    inset 0 2px 7px rgba(0, 0, 0, 0.95),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 1px 0 rgba(255, 255, 255, 0.07);
   overflow: hidden;
+}
+
+/* The glass. It lies over the pixels only: messages sit above it, so the words stay readable. */
+.screen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    112deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.045) 26%,
+    rgba(255, 255, 255, 0) 45%
+  );
+  pointer-events: none;
 }
 
 /* The 320 x 240 canvas is drawn at 232 x 174 (scale 0.725) and scaled smoothly, never with nearest-neighbour. */
@@ -192,6 +218,7 @@ body {
 .screen-loading {
   position: absolute;
   inset: 0;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -205,6 +232,17 @@ body {
 .screen-failed {
   padding: 12px;
   color: #b00020;
+  text-align: center;
+}
+
+/* The quiet state: the site has no ROM to boot. One sentence, small, in the middle of the screen. */
+.screen-status {
+  padding: 18px;
+  gap: 0;
+  background: #f7f8f9;
+  color: #4a4f57;
+  font-size: 11px;
+  line-height: 1.45;
   text-align: center;
 }
 
@@ -234,153 +272,9 @@ body {
   }
 }
 
-.rom-panel,
 .install-hint {
   user-select: text;
   -webkit-user-select: text;
-}
-
-/* ROM panel: small, white, black text. It sits exactly over the LCD (232 x 174) until a ROM is loaded, and it has
-   to fit that box in all nine languages, with or without an error line, so it is tuned tight. */
-.rom-panel {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 6px 9px 5px;
-  overflow: auto;
-  background: #fff;
-  color: #333;
-  font-size: 10px;
-  line-height: 1.25;
-}
-
-.rom-panel h1 {
-  margin: 0;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1.15;
-  text-align: center;
-  color: #000;
-}
-
-.rom-drop {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 6px;
-  min-height: 0;
-  padding: 5px;
-  border: 1px dashed #c8cbd0;
-  border-radius: 6px;
-  background: #fafafa;
-  text-align: center;
-}
-
-.rom-drop.is-over {
-  border-color: #000;
-  background: #f0f0f0;
-}
-
-.rom-drop p {
-  margin: 0;
-  /* The last safety valve: if a language runs long, the sentence is clipped rather than pushing the panel out. */
-  min-height: 0;
-  overflow: hidden;
-  font-size: 9.5px;
-  color: #555;
-}
-
-.rom-actions {
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-}
-
-.rom-button {
-  padding: 4px 11px;
-  border: 1px solid #000;
-  border-radius: 5px;
-  background: #000;
-  color: #fff;
-  font: inherit;
-  font-size: 10.5px;
-  font-weight: 600;
-  line-height: 1.2;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.rom-button:hover {
-  background: #333;
-}
-
-.rom-button:disabled {
-  opacity: 0.6;
-  cursor: default;
-}
-
-.rom-button-quiet {
-  border-color: #ccc;
-  background: #f0f0f0;
-  color: #333;
-}
-
-.rom-button-quiet:hover {
-  background: #e0e0e0;
-}
-
-.rom-error {
-  min-height: 0;
-  margin: 0;
-  font-size: 9.5px;
-  line-height: 1.2;
-  color: #b00020;
-  text-align: center;
-}
-
-.rom-hint {
-  margin: 0;
-  font-size: 9px;
-  color: #666;
-  text-align: center;
-}
-
-.rom-hint a {
-  color: #000;
-  font-weight: 600;
-}
-
-.rom-cancel {
-  align-self: center;
-  padding: 0;
-  border: 0;
-  background: none;
-  font: inherit;
-  font-size: 10px;
-  color: #666;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.toast {
-  position: absolute;
-  left: 6px;
-  right: 6px;
-  bottom: 6px;
-  padding: 4px 8px;
-  border-radius: 5px;
-  background: rgba(0, 0, 0, 0.88);
-  color: #fff;
-  font-size: 10px;
-  line-height: 1.3;
-  text-align: center;
-}
-
-.toast-error {
-  background: #b00020;
 }
 
 /* Keys. */
@@ -398,41 +292,50 @@ body {
   pointer-events: auto;
 }
 
-/* Function keys (MATH, APPS, SIN ...) are black with a thin light outline and bold white labels. */
+/*
+ * Key caps. Each one is a small moulded block: a vertical gradient from a lit top face to a shaded bottom, a dark
+ * seam where it sits in the case, a hairline highlight on the top edge, and a shadow under it. Pressing drops the
+ * cap into the case and turns the highlight into an inner shadow.
+ */
 .key {
   position: absolute;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: 5px;
-  background: #000;
-  color: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.75);
+  border-radius: 6px;
+  background: linear-gradient(180deg, #454951 0%, #2f3338 52%, #232629 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 2px 2px rgba(0, 0, 0, 0.5);
+  color: #f2f4f7;
   font: inherit;
   font-size: 9px;
   font-weight: 800;
   line-height: 1;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.55);
   cursor: pointer;
   touch-action: none;
   -webkit-tap-highlight-color: transparent;
   transition:
     transform 0.05s,
-    background-color 0.1s,
+    box-shadow 0.08s,
     filter 0.1s;
 }
 
 .key:hover {
-  background: #1c1c1c;
+  filter: brightness(1.14);
 }
 
 .key.is-down {
-  transform: translateY(1px);
-  background: #3a3a3a;
+  transform: translateY(1.5px);
+  background: linear-gradient(180deg, #22252a 0%, #2b2f34 100%);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.7),
+    0 0 0 rgba(0, 0, 0, 0);
+  filter: none;
 }
 
 .key:focus-visible,
 .arrow:focus-visible,
-.rom-button:focus-visible,
-.rom-cancel:focus-visible,
-.change-rom:focus-visible,
 #zoom_controls button:focus-visible {
   outline: 2px solid #3a72d9;
   outline-offset: 2px;
@@ -451,23 +354,20 @@ body {
     border-radius: 7px;
   }
 
-  .rom-button {
-    padding: 8px 16px;
-    font-size: 11.5px;
-  }
-
-  .rom-guide summary {
-    padding: 4px 0;
-  }
 }
 
-/* Y= to GRAPH, the operators and ENTER are light gray with black labels. */
+/*
+ * The hardware's own colour coding: the graphing keys, the four operators and ENTER are light gray, the digits are
+ * white, 2nd is blue and ALPHA is green, and every other key is dark. Light caps carry dark printing, dark caps
+ * carry white printing, exactly as on the calculator.
+ */
 .key-fn,
 .key-op,
 .key-enter {
-  border-color: #b9bdc4;
-  background: #d9dce1;
-  color: #000;
+  border-color: #7f858f;
+  background: linear-gradient(180deg, #f3f5f8 0%, #d6dae1 55%, #c2c7d0 100%);
+  color: #171a1f;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .key-fn {
@@ -483,62 +383,43 @@ body {
   font-size: 9px;
 }
 
-.key-fn:hover,
-.key-op:hover,
-.key-enter:hover {
-  background: #e6e8eb;
-}
-
 .key-fn.is-down,
 .key-op.is-down,
 .key-enter.is-down {
-  background: #b9bdc4;
+  background: linear-gradient(180deg, #b7bcc5 0%, #ccd1d8 100%);
 }
 
-/* Digits, the decimal point and the negate key are white with black labels. */
 .key-num {
-  border-color: #d0d3d8;
-  background: #fff;
-  color: #000;
+  border-color: #7f858f;
+  background: linear-gradient(180deg, #fdfdfe 0%, #e8ebef 55%, #d8dce3 100%);
+  color: #171a1f;
   font-size: 13px;
   font-weight: 700;
-}
-
-.key-num:hover {
-  background: #f1f2f4;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .key-num.is-down {
-  background: #d6d8dc;
+  background: linear-gradient(180deg, #ccd0d7 0%, #dfe3e9 100%);
 }
 
-/* 2nd is solid blue and ALPHA is solid green. */
 .key-second {
-  border-color: #2e6be6;
-  background: #2e6be6;
+  border-color: #17458f;
+  background: linear-gradient(180deg, #4a86ee 0%, #2f6ad4 55%, #24539f 100%);
   color: #fff;
-}
-
-.key-second:hover {
-  background: #4a80f0;
 }
 
 .key-second.is-down {
-  background: #1f55c2;
+  background: linear-gradient(180deg, #1e4691 0%, #2a5cbb 100%);
 }
 
 .key-alpha {
-  border-color: #2ca25a;
-  background: #2ca25a;
+  border-color: #1a6b33;
+  background: linear-gradient(180deg, #42b45f 0%, #2d9950 55%, #227a41 100%);
   color: #fff;
 }
 
-.key-alpha:hover {
-  background: #3bb56a;
-}
-
 .key-alpha.is-down {
-  background: #1f8147;
+  background: linear-gradient(180deg, #1c6c37 0%, #2a8c4a 100%);
 }
 
 .legend {
@@ -558,21 +439,24 @@ body {
   line-height: 0;
 }
 
+/* Printed on the case above the key, as on the calculator: blue for 2nd, green for ALPHA. */
 .legend-second {
-  color: #5b95ff;
+  color: #74a9ff;
 }
 
 .legend-alpha {
-  color: #3fcf7a;
+  color: #57d97c;
   text-align: right;
 }
 
-/* Arrow pad: a light gray ring cut into four wedges, a black hub, and two small brightness icons. */
+/* Arrow pad: a machined metal ring cut into four wedges, a black hub, and two small brightness icons. */
 .arrow-pad {
   position: absolute;
   border-radius: 50%;
-  background: #d9dce1;
-  box-shadow: inset 0 0 0 1px #b9bdc4;
+  background: radial-gradient(circle at 50% 32%, #565c65 0%, #33373d 58%, #1e2126 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 2px 3px rgba(0, 0, 0, 0.55);
 }
 
 .arrow {
@@ -589,11 +473,12 @@ body {
 }
 
 .arrow:hover {
-  background: rgba(0, 0, 0, 0.07);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .arrow.is-down {
-  background: rgba(0, 0, 0, 0.22);
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .arrow-glyph {
@@ -611,8 +496,10 @@ body {
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: #000;
-  box-shadow: 0 0 0 1px #8a8e96;
+  background: radial-gradient(circle at 50% 30%, #2b2f35 0%, #101216 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 0 0 1px rgba(0, 0, 0, 0.8);
   transform: translate(-50%, -50%);
   pointer-events: none;
 }
@@ -684,47 +571,6 @@ body {
 .install-dismiss:focus-visible {
   outline: 2px solid #fff;
   outline-offset: 2px;
-}
-
-/*
- * The ROM guide. Collapsed by default so the panel keeps fitting the 232 x 174 LCD in all nine languages.
- * The whole summary is a target, and the text inside can be selected and copied.
- */
-.rom-guide {
-  flex: none;
-}
-
-.rom-guide summary {
-  font-size: 8.5px;
-  font-weight: 600;
-  color: #000;
-  text-align: center;
-  cursor: pointer;
-  list-style: none;
-}
-
-.rom-guide summary::-webkit-details-marker {
-  display: none;
-}
-
-.rom-guide summary::after {
-  content: ' ▾';
-}
-
-.rom-guide[open] summary::after {
-  content: ' ▴';
-}
-
-.rom-guide summary:focus-visible {
-  outline: 2px solid #3a72d9;
-  outline-offset: 1px;
-}
-
-.rom-guide p {
-  margin: 2px 0 0;
-  font-size: 9px;
-  line-height: 1.25;
-  color: #555;
 }
 
 /* Resizing: iPad Split View, Slide Over and rotation. The case is never squashed, it is scaled and re-centred. */

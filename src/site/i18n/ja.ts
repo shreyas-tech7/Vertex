@@ -237,14 +237,6 @@ export const ja: Strings = {
     zoomOut: '縮小',
     zoomIn: '拡大',
     zoomLabel: 'ズームの大きさ',
-    romHeading: 'TI-84 Plus CEのROMを読み込む',
-    romDrop: 'ROMファイルをここにドロップしてください。ブラウザの外には出ません。',
-    romChoose: 'ROMファイルを選ぶ',
-    romHint: 'ご自身の電卓のROMは、{link}で作れます。',
-    romHintLink: 'CEmuのROMダンプウィザード',
-    romGuideTitle: '自分の電卓からROMを作る方法',
-    romGuide:
-      '自分のTI-84 Plus CEをパソコンに接続し、CEmuを開いてROMダンプウィザードでROMファイルを保存します。そのファイルを保管してください。VertexはROMを持っておらず、お渡しすることもできません。',
     installTitle: 'ROMをこの端末に残す',
     installBody:
       'Safariは、しばらく開いていないサイトの保存領域を消すことがあります。ROMを残すため、Vertexをホーム画面に追加してください。共有をタップし、ホーム画面に追加を選びます。',
@@ -252,10 +244,6 @@ export const ja: Strings = {
     restoring: 'このブラウザーに保存されたROMを復元しました。',
     unsupported:
       'このブラウザーは、エミュレーターに必要な機能がないため、電卓を動かせません。最新版のChrome、Safari、Edge、Firefoxをお試しください。',
-    replace: '置き換える',
-    remove: '削除',
-    cancel: 'キャンセル',
-    changeRom: 'ROMを変更',
     checking: 'ROMを確認しています…',
     starting: '電卓を起動しています…',
     loading: 'エミュレーターを読み込んでいます…',
@@ -270,6 +258,8 @@ export const ja: Strings = {
       storage: 'ブラウザがROMの保存を許可しませんでした。次回は、もう一度読み込む必要があります。',
       crashed: 'エミュレーターが止まりました。ページを再読み込みして、再開してください。',
       unreadable: 'ブラウザがこのファイルを読み取れませんでした。',
+      missing: 'このサイトにはROMがまだ入っていないため、電卓を起動できません。',
+      offline: 'ROMをダウンロードできませんでした。接続を確認してページを再読み込みしてください。',
     },
     transfer: {
       sending: '{name}を送信しています…',

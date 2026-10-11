@@ -4,9 +4,35 @@ Honest state of the project. Anything unfinished, unverified, or different from 
 
 ## Current milestone
 
-R3 (startup) on `arena/01a10503-vertex`, a PR into `main`. Round 2 (PR #4) is merged, so this branch was cut from
-`main` at `1990d65`. **Nothing in this repository has ever run a real TI-OS ROM**, because no ROM was or may be
-obtained. See "Not verified" below.
+R4 (the site serves the ROM) on `arena/68c73bc5-vertex`, a PR into `main`, branched from `main` at `285aac7`.
+
+**Nothing in this repository has ever run a real TI-OS ROM**, and this round did not change that: no ROM was
+downloaded, and none may be. The operating system in a TI-84 Plus CE is Texas Instruments' copyrighted software. Its
+licence gives the owner of a calculator one archive copy, forbids use on an emulator the owner did not obtain from TI,
+and forbids distribution. No site that offers a CE ROM has that permission, so nothing was fetched from one, and no
+ROM is committed, embedded, generated or linked to. See "Not verified" below.
+
+### What R4 changed
+
+The calculator boots the ROM the site serves, at `rom/ti84ce.rom`, with no click, no file and no setup. Visitors are
+never asked for anything: the file input, the drop zone, the ROM panel, the Change ROM button and the CEmu dump wizard
+link are gone from the page, and the tests assert there is no `input[type=file]` in it at all.
+
+| Area             | What it does now                                                                                         |
+| ---------------- | -------------------------------------------------------------------------------------------------------- |
+| ROM source       | One file the site serves (`src/calculator/romSource.ts`), overridable with `VITE_ROM_URL`                |
+| Boot             | Served ROM first, the copy in IndexedDB second, one sentence in the screen last. All without a click      |
+| Caching          | Stored with the server's `etag` and `last-modified`, revalidated with `If-None-Match`, 304 keeps it      |
+| Failures         | 404, a lost connection, or a file that is not a ROM each end in one plain sentence inside the LCD         |
+| Owner's back door| Dropping a `.rom` file on the calculator still replaces the served ROM. The interface never mentions it   |
+| Look             | Moulded key caps in the hardware's own colours, a charcoal case lit from above, the LCD in a recessed bezel |
+| Owner docs       | `public/rom/README.md`: how to put your own dump in place, and what the licence allows                    |
+
+**No ROM means no boot, and the page says so.** With no file at that path and nothing in the browser, the screen shows
+"This site has no ROM installed yet, so the calculator cannot boot." It is a status message, not a simulation: the
+emulator is not running, no keys reach anything, and nothing in the page claims the calculator works.
+
+## Previous rounds
 
 ### What R3 changed
 
@@ -38,20 +64,27 @@ New in this round:
 ## Needs the owner (not faked here)
 
 1. Dump the ROM from your own calculator with CEmu's ROM dump wizard only, and use arTIfiCE first if the OS is newer
-   than 5.5.
-2. Import that ROM on the live site and run the 16-item TI-OS checklist with it.
+   than 5.5. Put it at `public/rom/ti84ce.rom` (or serve it elsewhere and build with `VITE_ROM_URL`) and rebuild.
+   Until then the site shows the no-ROM sentence and the calculator does not run. This cannot be done from here.
+2. With that ROM in place, run the 16-item TI-OS checklist against the live site.
 3. Open the live site in real Safari (desktop, iPad, iPhone) and walk the startup checklist, since WebKit cannot be
    downloaded into this sandbox (see "Verification limits").
 4. Check that the ROM survives a reload and a browser restart on a real device.
 5. Measure cold and warm load on the live site. The numbers in `docs/VERIFICATION.md` come from localhost.
 
-## Verified this round
+## Verified this round (R4)
 
-- `npm run check` (typecheck, lint, 429 unit tests, build, ROM scan): pass.
-- `npm run test:e2e` in Chromium and the phone profile: 250 pass, 10 skipped on purpose, 0 fail, 2.9 minutes.
-- `node scripts/measure-startup.mjs` against `vite preview`: cold median 218 ms to a usable calculator, warm 156 ms.
-- `node scripts/network-log.mjs`: no request left the site's own origin, and no request reached a TI or Pearson host.
-- `node scripts/scan-forbidden.mjs`: 146 repository files, 51 build files and 400 archive entries, clean.
+- `npm run check` (typecheck, lint, 438 unit tests, build, ROM scan): pass.
+- `npm run test:e2e` in Chromium and the phone profile: 242 pass, 10 skipped on purpose, 0 fail, 3.6 minutes. Firefox
+  and WebKit have no binary in this sandbox and are NOT CHECKED here.
+- Every e2e test runs against a page whose ROM route answers with the synthetic fixture, so the whole suite exercises
+  the real boot path: fetch, preflight, CEmu, IndexedDB, and the 304 revalidation.
+- `node scripts/scan-forbidden.mjs`: clean, no ROM, no OS image, no TI art, no TI or Pearson host.
+- Screenshots in `docs/screenshots/auto-rom-boot-*.png`: the calculator running, the no-ROM sentence, and the phone
+  layout, taken from the built site under `vite preview`.
+
+**The ROM in every one of those runs is the synthetic fixture** (`src/test-support/syntheticRom.ts`), which is a test
+file, not a calculator image. It proves the pipeline; it does not prove TI-OS. No real ROM was involved.
 
 The numbers above are real and were produced on this branch. Run the commands to reproduce them.
 

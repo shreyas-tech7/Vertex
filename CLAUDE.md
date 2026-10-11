@@ -23,13 +23,14 @@ Sandbox note: Playwright's browser downloads are blocked there. Set `VERTEX_CHRO
 ## Architecture map
 
 See `docs/ARCHITECTURE.md`. Short version: `emulator/` is CEmu plus a C adapter (GPLv3, own folder), `src/calculator` is the
-React calculator page (worker, keypad, ROM panel, zoom), `src/site` generates the nine-language static pages, and
+React calculator page (worker, keypad, ROM source, zoom), `src/site` generates the nine-language static pages, and
 `src/core` holds only the brand name and the key table (headless, ESLint enforces no DOM there).
 
 ## Conventions
 
 - TypeScript strict; **no `any` in `src/core`**; no `eval` / `new Function` anywhere.
 - The calculator is CEmu. Never hand-roll calculator math. Never download, search for, bundle or commit a ROM or OS image.
+  The ROM the site serves is the owner's own dump; see `public/rom/README.md`. Visitors are never asked for a file.
 - Key positions come from CEmu's `keymap.cpp` (`KEY_MATRIX` in `src/core/os/keys.ts`). Where anything disagrees, CEmu wins.
 - Everything is self-hosted. No request to any third-party origin, none to TI or Pearson. Strict CSP (`src/site/csp.ts`).
 - Copy rules, in every language: active voice, simple words, no em dashes, no semicolons, no filler. `copy.test.ts` checks it.

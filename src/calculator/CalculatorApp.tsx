@@ -8,7 +8,6 @@ import { InstallHint } from './InstallHint.tsx';
 import { Keypad } from './Keypad.tsx';
 import { BODY_HEIGHT, BODY_WIDTH } from './keypadLayout.ts';
 import { pageLanguage } from './language.ts';
-import { RomPanel } from './RomPanel.tsx';
 import { Screen } from './Screen.tsx';
 import { useCalculator } from './useCalculator.ts';
 import { ZoomControls } from './ZoomControls.tsx';
@@ -93,10 +92,11 @@ export function CalculatorApp() {
     return () => timers.forEach(clearTimeout);
   }, [zoom]);
 
-  const showPanel = calculator.panelOpen;
   const unsupported = calculator.phase === 'unsupported';
-  const loading =
-    !unsupported && !showPanel && calculator.phase !== 'running' && calculator.phase !== 'failed';
+  const noRom = calculator.phase === 'needRom';
+  const loading = !unsupported && !noRom && calculator.phase !== 'running' && calculator.phase !== 'failed';
+  // One plain sentence inside the screen. Never a picker, never a drop zone, never a wizard link.
+  const status = noRom ? (calculator.error ? strings.errors[calculator.error] : strings.errors.missing) : null;
 
   return (
     <>
@@ -120,27 +120,23 @@ export function CalculatorApp() {
             data-phase={calculator.phase}
             style={{ '--zoom': zoom } as CSSProperties}
           >
+            {/* The name printed on the case above the screen, where the hardware prints its own model. */}
+            <span className="calc-brand">{APP_NAME}</span>
             <Screen strings={strings} canvas={calculator.canvas} loading={loading} toast={calculator.toast}>
               {unsupported && (
                 <div className="screen-loading screen-failed" role="alert">
                   <span>{strings.unsupported}</span>
                 </div>
               )}
-              {calculator.phase === 'failed' && !showPanel && (
+              {calculator.phase === 'failed' && (
                 <div className="screen-loading screen-failed" role="alert">
                   <span>{calculator.error ? strings.errors[calculator.error] : ''}</span>
                 </div>
               )}
-              {showPanel && (
-                <RomPanel
-                  strings={strings}
-                  hasRom={calculator.hasRom}
-                  busy={calculator.busy}
-                  error={calculator.error ? strings.errors[calculator.error] : null}
-                  onFile={(file) => void calculator.loadRom(file)}
-                  onRemove={() => void calculator.removeRom()}
-                  onCancel={calculator.closePanel}
-                />
+              {status && (
+                <div className="screen-loading screen-status" role="status">
+                  <span>{status}</span>
+                </div>
               )}
             </Screen>
             <Keypad
@@ -154,17 +150,6 @@ export function CalculatorApp() {
         </div>
       </div>
       <div className="below">
-        <button
-          type="button"
-          className="change-rom"
-          onClick={calculator.openPanel}
-          style={{
-            visibility: calculator.phase === 'running' && !calculator.panelOpen ? 'visible' : 'hidden',
-          }}
-          tabIndex={calculator.phase === 'running' && !calculator.panelOpen ? 0 : -1}
-        >
-          {strings.changeRom}
-        </button>
         <p className="notice">{strings.notice}</p>
       </div>
       <InstallHint strings={strings} />

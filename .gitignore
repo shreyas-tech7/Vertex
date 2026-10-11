@@ -13,8 +13,11 @@ test-results
 *.tsbuildinfo
 screenshots
 
-# Calculator ROMs and OS images must never be committed (visitors supply their own).
+# Calculator ROMs and OS images must never be committed. The site serves one from public/rom/ti84ce.rom,
+# which the owner puts there from their own calculator. A copy that reaches git is a licensing problem.
 *.rom
+public/rom/*.rom
+public/rom/*.8eu
 *.8eu
 *.8ek
 *.h84statej
